@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Đặt vào res/menu/bottom_nav_menu.xml (tạo thư mục menu nếu chưa có) -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_nav_home"
+        android:title="Trang chủ" />
+    <item
+        android:id="@+id/nav_courses"
+        android:icon="@drawable/ic_nav_courses"
+        android:title="Khóa học" />
+    <item
+        android:id="@+id/nav_assignments"
+        android:icon="@drawable/ic_nav_assignments"
+        android:title="Bài tập" />
+    <item
+        android:id="@+id/nav_notifications"
+        android:icon="@drawable/ic_nav_notifications"
+        android:title="Thông báo" />
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_nav_profile"
+        android:title="Cá nhân" />
+</menu>

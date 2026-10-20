@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Đặt vào res/color/nav_icon_color.xml (tạo thư mục color nếu chưa có) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Tab đang chọn: icon trắng (nằm trên nền tím) -->
+    <item android:color="#FFFFFF" android:state_checked="true" />
+    <!-- Tab chưa chọn: xám -->
+    <item android:color="#6B7280" />
+</selector>

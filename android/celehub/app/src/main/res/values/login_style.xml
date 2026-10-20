@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Đặt vào res/values/login_styles.xml -->
+<resources>
+    <!-- Ô nhập trắng, bo góc 12dp, không viền (chỉ viền xanh khi focus) -->
+    <style name="Widget.App.LoginField" parent="Widget.Material3.TextInputLayout.OutlinedBox.Dense">
+        <item name="hintEnabled">false</item>
+        <item name="boxBackgroundColor">#FFFFFF</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">1.5dp</item>
+        <item name="boxStrokeColor">#3659D9</item>
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="endIconTint">#111827</item>
+    </style>
+</resources>

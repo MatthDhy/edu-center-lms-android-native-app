@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="24dp">
+
+        <!-- ================= 1. HEADER ================= -->
+        <LinearLayout
+            android:id="@+id/headerContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_home_header"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="72dp">
+
+            <!-- Avatar chữ cái đầu -->
+            <TextView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle"
+                android:backgroundTint="#EDE7FB"
+                android:fontFamily="@font/inter_bold"
+                android:gravity="center"
+                android:text="GH"
+                android:textColor="#3B2A78"
+                android:textSize="15sp" />
+
+            <!-- Lời chào -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Xin chào,"
+                    android:textColor="#F3EEFF"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_bold"
+                    android:text="Gia Huy"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp" />
+            </LinearLayout>
+
+            <!-- Chuông thông báo + chấm đỏ -->
+            <FrameLayout
+                android:id="@+id/btnNotification"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_circle"
+                    android:contentDescription="Thông báo"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_nav_notifications"
+                    app:tint="#3B2A78" />
+
+                <TextView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="top|end"
+                    android:background="@drawable/bg_circle"
+                    android:backgroundTint="#EF4444"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10sp" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- ================= 2. CA HỌC TIẾP THEO ================= -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="-52dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/bg_round_20"
+            android:backgroundTint="#3B2A78"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_semibold"
+                android:text="Ca học tiếp theo"
+                android:textColor="#E5DEFF"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/inter_bold"
+                android:text="Toán 11"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Thứ 5, 15/10 • 18:00–19:30 • P.302"
+                android:textColor="#E5DEFF"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Nguyễn Thu Hà • Bắt đầu sau 20 phút"
+                android:textColor="#E5DEFF"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewClass"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="14dp"
+                android:fontFamily="@font/inter_semibold"
+                android:text="Xem lớp học"
+                android:textAllCaps="false"
+                android:textColor="#7B61F0"
+                android:textSize="14sp"
+                app:backgroundTint="#FFFFFF"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_arrow_outward"
+                app:iconGravity="textStart"
+                app:iconSize="18dp"
+                app:iconTint="#7B61F0" />
+        </LinearLayout>
+
+        <!-- ================= 3. LƯỚI 6 Ô CHỨC NĂNG ================= -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <!-- Hàng 1 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/tileAttendance"
+                    style="@style/Widget.App.Tile"
+                    android:backgroundTint="#D4F1E1">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_home_attendance"
+                        app:tint="#15803D" />
+
+                    <TextView
+                        style="@style/Widget.App.TileLabel"
+                        android:text="Điểm danh" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tileTuition"
+                    style="@style/Widget.App.Tile"
+                    android:backgroundTint="#FFE9A8">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_home_tuition"
+                        app:tint="#B45309" />
+
+                    <TextView
+                        style="@style/Widget.App.TileLabel"
+                        android:text="Học phí" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tileQuiz"
+                    style="@style/Widget.App.Tile"
+                    android:backgroundTint="#D6E6FF">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_home_quiz"
+                        app:tint="#2563EB" />
+
+                    <TextView
+                        style="@style/Widget.App.TileLabel"
+                        android:text="Quiz" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Hàng 2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/tileGrades"
+                    style="@style/Widget.App.Tile"
+                    android:backgroundTint="#E6DEFB">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_home_grades"
+                        app:tint="#5B3FD0" />
+
+                    <TextView
+                        style="@style/Widget.App.TileLabel"
+                        android:text="Hồ sơ &amp; Bảng điểm" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tileSchedule"
+                    style="@style/Widget.App.Tile"
+                    android:backgroundTint="#D6E6FF">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_home_schedule"
+                        app:tint="#2563EB" />
+
+                    <TextView
+                        style="@style/Widget.App.TileLabel"
+                        android:text="Lịch học" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tileDocs"
+                    style="@style/Widget.App.Tile"
+                    android:backgroundTint="#E6DEFB">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_home_docs"
+                        app:tint="#5B3FD0" />
+
+                    <TextView
+                        style="@style/Widget.App.TileLabel"
+                        android:text="Tài liệu" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ================= 4. BÀI TẬP SẮP ĐẾN HẠN ================= -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/Widget.App.SectionTitle"
+                android:text="Bài tập sắp đến hạn" />
+
+            <TextView
+                android:id="@+id/tvViewAllAssignments"
+                style="@style/Widget.App.SectionAction"
+                android:text="Xem tất cả" />
+        </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAssignment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            app:strokeColor="#E5DEFF"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <!-- Ô icon -->
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_round_12"
+                    android:backgroundTint="#FEF3C7"
+                    android:importantForAccessibility="no"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_nav_assignments"
+                    app:tint="#B45309" />
+
+                <!-- Tên bài + môn/hạn nộp -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter_semibold"
+                        android:text="Đề ôn chương 1"
+                        android:textColor="#1E1B4B"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Toán 11 • Hạn 16/10, 23:59"
+                        android:textColor="#6B7280"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- Nhãn còn mấy ngày -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_round_12"
+                    android:backgroundTint="#FEF3C7"
+                    android:fontFamily="@font/inter_semibold"
+                    android:paddingStart="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="4dp"
+                    android:text="Còn 1 ngày"
+                    android:textColor="#B45309"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ================= 5. THÔNG BÁO MỚI ================= -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/Widget.App.SectionTitle"
+                android:text="Thông báo mới" />
+
+            <TextView
+                android:id="@+id/tvViewAllNotifications"
+                style="@style/Widget.App.SectionAction"
+                android:text="Tất cả" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="20dp"
+            android:text="Quiz Chương 1 đã mở • 15 phút trước"
+            android:textColor="#6B7280"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginEnd="20dp"
+            android:text="Học phí tháng 10 đến hạn 20/10 • 1 giờ trước"
+            android:textColor="#6B7280"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Đặt vào res/values/otp_styles.xml -->
+<resources>
+    <!-- Một ô OTP: trắng, bo góc, chỉ nhập 1 số, chữ căn giữa -->
+    <style name="Widget.App.OtpBox" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:background">@drawable/bg_otp_box</item>
+        <item name="android:gravity">center</item>
+        <item name="android:inputType">number</item>
+        <item name="android:maxLength">1</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">#111827</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:cursorVisible">false</item>
+    </style>
+</resources>
