@@ -1,4 +1,4 @@
-package com.example.celehub;
+package com.example.celehub.Fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.example.celehub.R;
 
 /** Màn tạm cho các tab chưa làm, chỉ hiện tên tab ở giữa màn hình. */
 public class PlaceholderFragment extends Fragment {

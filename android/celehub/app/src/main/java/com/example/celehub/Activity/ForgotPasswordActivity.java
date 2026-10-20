@@ -1,4 +1,4 @@
-package com.example.celehub;
+package com.example.celehub.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,7 @@ import android.util.Patterns;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.celehub.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;

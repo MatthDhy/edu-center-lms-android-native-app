@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Đặt vào res/xml/network_security_config.xml
+     Android mặc định chặn địa chỉ http:// (không có s). Khi chạy thử với backend trên máy tính
+     ta cho phép riêng địa chỉ máy ảo (10.0.2.2). Bản thật phải dùng https:// và xóa khối này. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <!-- Nếu thử trên điện thoại thật, thêm IP máy tính, ví dụ:
+        <domain includeSubdomains="false">192.168.1.10</domain> -->
+    </domain-config>
+</network-security-config>

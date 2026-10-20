@@ -1,5 +1,5 @@
 
-package com.example.celehub;
+package com.example.celehub.Activity;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -15,6 +15,9 @@ import android.os.Looper;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.celehub.Data.SessionManager;
+import com.example.celehub.R;
+
 public class SplashActivity extends AppCompatActivity {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -22,16 +25,18 @@ public class SplashActivity extends AppCompatActivity {
     private final Runnable navigateToLogin = new Runnable() {
         @Override
         public void run() {
-            Intent intent = new Intent(
-                    SplashActivity.this,
-                    LoginActivity.class
-            );
-
+            SessionManager session = SessionManager.get(SplashActivity.this);
+            Intent intent;
+            if (!session.isLoggedIn()) {
+                intent = new Intent(SplashActivity.this, LoginActivity.class);
+            } else if (session.isMustChangePassword()) {
+                intent = new Intent(SplashActivity.this, ResetPasswordActivity.class);
+                intent.putExtra(ResetPasswordActivity.EXTRA_MODE, ResetPasswordActivity.MODE_FIRST_LOGIN);
+            } else {
+                intent = new Intent(SplashActivity.this, MainActivity.class);
+            }
             startActivity(intent);
-            overridePendingTransition(
-                    R.anim.fade_in,
-                    R.anim.fade_out
-            );
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         }
     };

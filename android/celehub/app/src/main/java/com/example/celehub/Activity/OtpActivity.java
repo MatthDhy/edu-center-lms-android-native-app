@@ -1,4 +1,4 @@
-package com.example.celehub;
+package com.example.celehub.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.celehub.R;
 import com.google.android.material.button.MaterialButton;
 
 public class OtpActivity extends AppCompatActivity {
