@@ -1,0 +1,82 @@
+services:
+  # ─────────────────────────────────────────────────────────────────────────
+  # 1. Cơ sở dữ liệu PostgreSQL
+  # ─────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: celehub_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: celehub_db
+      POSTGRES_USER: celehub_user
+      POSTGRES_PASSWORD: celehub_dev
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "5432:5432"          # Mở ra ngoài để DBeaver / pgAdmin connect trực tiếp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U celehub_user -d celehub_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 2. pgAdmin — Giao diện quản lý Database (http://localhost:5050)
+  # ─────────────────────────────────────────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: celehub_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@celehub.edu.vn
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 3. Backend Spring Boot — REST API
+  # ─────────────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: celehub_backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/celehub_db
+      DB_USER: celehub_user
+      DB_PASSWORD: celehub_dev
+      # Ghi đè JWT secret khi chạy production — bắt buộc thay đổi!
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me-please-32-bytes-minimum!!}
+      PUBLIC_BASE_URL: http://localhost:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 4. Web Admin — React + Vite, được serve bởi Nginx
+  #    Truy cập: http://localhost:3000
+  #    Nginx tự proxy /api/* và /files/* → backend:8080 (không cần CORS phức tạp)
+  # ─────────────────────────────────────────────────────────────────────────
+  web-admin:
+    build:
+      context: ./web-admin
+      dockerfile: Dockerfile
+    container_name: celehub_webadmin
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+
