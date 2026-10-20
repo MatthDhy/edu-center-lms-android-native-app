@@ -1,0 +1,40 @@
+### Dùng với VS Code extension "REST Client" (humao.rest-client)
+@host = http://localhost:8080
+
+### 1. Login admin (mặc định)
+# @name loginAdmin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@celehub.edu.vn", "password": "Admin@123456" }
+
+### 2. Admin tạo học viên (xem mật khẩu tạm trong log backend)
+@adminToken = {{loginAdmin.response.body.data.token}}
+POST {{host}}/api/admin/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "fullName": "Nguyễn Minh Nhật", "email": "nhat@gmail.com", "phone": "0912345678", "role": "STUDENT" }
+
+### 3. Học viên login bằng mật khẩu tạm (điền mật khẩu từ log)
+# @name loginStudent
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "nhat@gmail.com", "password": "PASTE_TEMP_PASSWORD" }
+
+### 4. Chưa đổi mật khẩu -> gọi API nghiệp vụ phải bị 403
+@studentToken = {{loginStudent.response.body.data.token}}
+GET {{host}}/api/users/me
+Authorization: Bearer {{studentToken}}
+
+### 5. Đổi mật khẩu lần đầu
+POST {{host}}/api/auth/force-change-password
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{ "newPassword": "MySecurePass@2026" }
+
+### 6. Gọi lại /me -> 200
+GET {{host}}/api/users/me
+Authorization: Bearer {{studentToken}}
