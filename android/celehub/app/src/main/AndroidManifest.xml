@@ -31,7 +31,9 @@
         <activity
             android:name=".Activity.ForgotPasswordActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".Activity.ResetPasswordActivity"
+            android:exported="false" />
         <activity
             android:name=".Activity.OtpActivity"
             android:exported="false"

@@ -27,7 +27,8 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    if (error.response?.status === 401) {
+  const isLoginCall = error.config?.url?.includes('/api/auth/login');
+  if (error.response?.status === 401 && !isLoginCall) {
       localStorage.removeItem('celehub_token');
       localStorage.removeItem('celehub_user');
       if (window.location.pathname !== '/login') {

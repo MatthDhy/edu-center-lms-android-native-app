@@ -15,3 +15,6 @@ android/local.properties
 *.iml
 # OS
 .DS_Store
+docs/LMS_App.old.sql
+docs/PROJECT_IMPLEMENTATION_ROADMAP.md
+docs/USER_FLOW_AND_WIREFRAME_SPEC.md

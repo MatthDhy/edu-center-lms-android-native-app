@@ -59,7 +59,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./backend/uploads:/app/uploads
+      - ./app/uploads:/app/uploads
 
   # ─────────────────────────────────────────────────────────────────────────
   # 4. Web Admin — React + Vite, được serve bởi Nginx

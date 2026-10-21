@@ -58,7 +58,7 @@ public class UserService {
     }
 
     public java.util.List<UserDto> searchUsers(Role role, UserStatus status, String search) {
-        String query = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+        String query = (search != null) ? search.trim().toLowerCase() : "";
         return userRepository.searchUsers(role, status, query).stream()
                 .map(UserDto::from)
                 .toList();
