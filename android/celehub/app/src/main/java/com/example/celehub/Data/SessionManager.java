@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import com.example.celehub.Model.AuthResponse;
 import com.example.celehub.Model.UserDto;
+
 /**
  * Lưu token và thông tin người dùng sau khi đăng nhập, để lần sau mở app khỏi đăng nhập lại.
  * Dữ liệu nằm trong SharedPreferences riêng của app (app khác không đọc được).
@@ -15,6 +16,7 @@ public class SessionManager {
     private static final String KEY_TOKEN = "token";
     private static final String KEY_ROLE = "role";
     private static final String KEY_MUST_CHANGE = "must_change_password";
+    private static final String KEY_USER_ID = "user_id";
     private static final String KEY_FULL_NAME = "full_name";
     private static final String KEY_EMAIL = "email";
     private static final String KEY_PHONE = "phone";
@@ -36,14 +38,23 @@ public class SessionManager {
 
     /** Gọi ngay sau khi đăng nhập thành công. */
     public void saveLogin(AuthResponse auth) {
-        UserDto user = auth.getUser();
         prefs.edit()
                 .putString(KEY_TOKEN, auth.getToken())
                 .putString(KEY_ROLE, auth.getRole())
                 .putBoolean(KEY_MUST_CHANGE, auth.isMustChangePassword())
-                .putString(KEY_FULL_NAME, user != null ? user.getFullName() : null)
-                .putString(KEY_EMAIL, user != null ? user.getEmail() : null)
-                .putString(KEY_PHONE, user != null ? user.getPhone() : null)
+                .apply();
+        if (auth.getUser() != null) {
+            saveUser(auth.getUser());
+        }
+    }
+
+    /** Cập nhật thông tin người dùng (sau khi đăng nhập, hoặc sau khi gọi GET /api/users/me). */
+    public void saveUser(UserDto user) {
+        prefs.edit()
+                .putLong(KEY_USER_ID, user.getId() != null ? user.getId() : -1L)
+                .putString(KEY_FULL_NAME, user.getFullName())
+                .putString(KEY_EMAIL, user.getEmail())
+                .putString(KEY_PHONE, user.getPhone())
                 .apply();
     }
 
@@ -72,16 +83,23 @@ public class SessionManager {
         return prefs.getString(KEY_ROLE, null);
     }
 
+    public long getUserId() {
+        return prefs.getLong(KEY_USER_ID, -1L);
+    }
+
     public String getFullName() {
-        return prefs.getString(KEY_FULL_NAME, "");
+        String value = prefs.getString(KEY_FULL_NAME, "");
+        return value == null ? "" : value;
     }
 
     public String getEmail() {
-        return prefs.getString(KEY_EMAIL, "");
+        String value = prefs.getString(KEY_EMAIL, "");
+        return value == null ? "" : value;
     }
 
     public String getPhone() {
-        return prefs.getString(KEY_PHONE, "");
+        String value = prefs.getString(KEY_PHONE, "");
+        return value == null ? "" : value;
     }
 
     /** "Gia Huy" -> "GH", "Nguyễn Minh Nhật" -> "NN" (chữ cái đầu của từ đầu và từ cuối). */
@@ -92,5 +110,15 @@ public class SessionManager {
         String first = parts[0].substring(0, 1);
         String last = parts.length > 1 ? parts[parts.length - 1].substring(0, 1) : "";
         return (first + last).toUpperCase();
+    }
+
+    /**
+     * Mã học viên hiển thị, ví dụ "HV0248".
+     * TẠM THỜI: backend chưa có trường mã học viên nên mã này được tạo từ id người dùng.
+     * Khi backend thêm trường studentCode vào UserDto thì đổi hàm này trả về giá trị đó.
+     */
+    public String getDisplayCode() {
+        long id = getUserId();
+        return id < 0 ? "" : String.format("HV%04d", id);
     }
 }

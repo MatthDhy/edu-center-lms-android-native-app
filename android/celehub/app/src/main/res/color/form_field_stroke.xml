@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Đặt vào res/color/form_field_stroke.xml: viền ô nhập, tím khi đang gõ, nhạt khi bình thường -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="#7B61F0" android:state_focused="true" />
+    <item android:color="#E3DDF5" />
+</selector>

@@ -1,14 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragment.ProfileFragment">
+    android:background="#FFFFFF"
+    android:fillViewport="true"
+    android:scrollbars="none">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="16dp">
 
-</FrameLayout>
+        <!-- ============ KHỐI THÔNG TIN (tím đậm) ============ -->
+        <LinearLayout
+            android:id="@+id/headerContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_profile_header"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="28dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="22dp">
+
+            <TextView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_circle"
+                android:backgroundTint="#EDE7FB"
+                android:fontFamily="@font/inter_bold"
+                android:gravity="center"
+                android:id="@+id/tvProfileInitials"
+                android:text="GH"
+                android:textColor="#3B2A78"
+                android:textSize="22sp" />
+
+            <TextView
+                android:id="@+id/tvProfileName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/inter_bold"
+                android:text="Gia Huy"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:id="@+id/tvProfileMeta"
+                android:text="HV0248 • Học viên"
+                android:textColor="#E5DEFF"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:id="@+id/tvProfileEmail"
+                android:text="giahuy@celehub.example"
+                android:textColor="#CFC4F5"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:id="@+id/tvProfilePhone"
+                android:text="0987 654 321"
+                android:textColor="#CFC4F5"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- ============ TÀI KHOẢN ============ -->
+        <TextView
+            style="@style/Widget.App.GroupLabel"
+            android:text="TÀI KHOẢN" />
+
+        <LinearLayout
+            android:id="@+id/groupAccount"
+            style="@style/Widget.App.SettingGroup" />
+
+        <!-- ============ ỨNG DỤNG ============ -->
+        <TextView
+            style="@style/Widget.App.GroupLabel"
+            android:text="ỨNG DỤNG" />
+
+        <LinearLayout
+            android:id="@+id/groupApp"
+            style="@style/Widget.App.SettingGroup" />
+
+        <!-- ============ HỖ TRỢ ============ -->
+        <TextView
+            style="@style/Widget.App.GroupLabel"
+            android:text="HỖ TRỢ" />
+
+        <LinearLayout
+            android:id="@+id/groupSupport"
+            style="@style/Widget.App.SettingGroup" />
+
+        <!-- ============ ĐĂNG XUẤT ============ -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:fontFamily="@font/inter_semibold"
+            android:text="Đăng xuất"
+            android:textAllCaps="false"
+            android:textColor="#DC2626"
+            android:textSize="14sp"
+            app:backgroundTint="#FDE8EA"
+            app:cornerRadius="12dp"
+            app:strokeColor="#F8B4BA"
+            app:strokeWidth="1dp" />
+
+    </LinearLayout>
+</ScrollView>
