@@ -1,20 +1,49 @@
-# Backend
-backend/target/
-backend/uploads/
+# ===== Bí mật / môi trường =====
+.env
+.env.*
+!.env.example
+**/.env.local
 backend/.env
-*.log
-# IDE
-.idea/
+web-admin/.env.local
+*.pem
+*.jks
+*.keystore
+firebase-service-account.json
+google-services.json
+
+# ===== File dev chứa mật khẩu =====
 .vscode/*
 !.vscode/extensions.json
-# Android
+docs/http-client.env.json
+
+# ===== Backend =====
+backend/target/
+backend/uploads/
+app/uploads/
+uploads/
+*.log
+
+# ===== Web admin =====
+web-admin/node_modules/
+web-admin/dist/
+
+# ===== Android =====
 android/.gradle/
 android/build/
 android/app/build/
 android/local.properties
+android/celehub/local.properties
+android/celehub/.gradle/
+android/celehub/build/
+android/celehub/app/build/
 *.iml
-# OS
-.DS_Store
+.idea/
+
+# ===== Tài liệu không muốn đưa lên =====
 docs/LMS_App.old.sql
 docs/PROJECT_IMPLEMENTATION_ROADMAP.md
 docs/USER_FLOW_AND_WIREFRAME_SPEC.md
+
+# ===== OS =====
+.DS_Store
+Thumbs.db

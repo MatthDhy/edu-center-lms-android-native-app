@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 export default function LoginPage() {
   const { login, loading } = useAuth();
   const [email, setEmail] = useState('admin@celehub.edu.vn');
-  const [password, setPassword] = useState('Admin@123456');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {

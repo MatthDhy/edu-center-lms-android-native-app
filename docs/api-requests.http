@@ -1,14 +1,13 @@
 ### Dùng với VS Code extension "REST Client" (humao.rest-client)
-@host = http://localhost:8080
 
 ### 1. Login admin (mặc định)
 # @name loginAdmin
 POST {{host}}/api/auth/login
 Content-Type: application/json
 
-{ "email": "admin@celehub.edu.vn", "password": "Admin@123456" }
+{ "email": "{{adminEmail}}", "password": "{{adminPassword}}" }
 
-### 2. Admin tạo học viên (xem mật khẩu tạm trong log backend)
+### A2. Admin tạo học viên (xem mật khẩu tạm trong log backend: [MAIL STUB])
 @adminToken = {{loginAdmin.response.body.data.token}}
 POST {{host}}/api/admin/users
 Authorization: Bearer {{adminToken}}
@@ -16,25 +15,138 @@ Content-Type: application/json
 
 { "fullName": "Nguyễn Minh Nhật", "email": "nhat@gmail.com", "phone": "0912345678", "role": "STUDENT" }
 
-### 3. Học viên login bằng mật khẩu tạm (điền mật khẩu từ log)
+### A2b. Admin tạo giảng viên
+POST {{host}}/api/admin/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "fullName": "Nguyễn Thu Hà", "email": "ha.teacher@gmail.com", "phone": "0987654321", "role": "TEACHER" }
+
+### A3. Học viên login bằng mật khẩu tạm (điền mật khẩu từ log)
 # @name loginStudent
 POST {{host}}/api/auth/login
 Content-Type: application/json
 
 { "email": "nhat@gmail.com", "password": "PASTE_TEMP_PASSWORD" }
 
-### 4. Chưa đổi mật khẩu -> gọi API nghiệp vụ phải bị 403
+### A4. Chưa đổi mật khẩu -> gọi API nghiệp vụ phải bị 403
 @studentToken = {{loginStudent.response.body.data.token}}
 GET {{host}}/api/users/me
 Authorization: Bearer {{studentToken}}
 
-### 5. Đổi mật khẩu lần đầu
+### A5. Đổi mật khẩu lần đầu (mật khẩu mới phải khác mật khẩu tạm, >= 8 ký tự)
 POST {{host}}/api/auth/force-change-password
 Authorization: Bearer {{studentToken}}
 Content-Type: application/json
 
 { "newPassword": "MySecurePass@2026" }
 
-### 6. Gọi lại /me -> 200
+### A6. Gọi lại /me -> 200
 GET {{host}}/api/users/me
+Authorization: Bearer {{studentToken}}
+
+############################################################
+# B. QUÊN MẬT KHẨU (public) — OTP lấy từ log backend
+############################################################
+
+### B1. Yêu cầu OTP (luôn 200, kể cả email không tồn tại)
+POST {{host}}/api/auth/forgot-password/request
+Content-Type: application/json
+
+{ "email": "nhat@gmail.com" }
+
+### B2. Xác thực OTP -> nhận resetToken (sai > 5 lần thì OTP chết)
+# @name verifyOtp
+POST {{host}}/api/auth/forgot-password/verify
+Content-Type: application/json
+
+{ "email": "nhat@gmail.com", "otp": "PASTE_OTP_FROM_LOG" }
+
+### B3. Đặt mật khẩu mới bằng resetToken
+@resetToken = {{verifyOtp.response.body.data.resetToken}}
+POST {{host}}/api/auth/forgot-password/reset
+Content-Type: application/json
+
+{ "resetToken": "{{resetToken}}", "newPassword": "AnotherPass@2026" }
+
+############################################################
+# C. TAB CÁ NHÂN (STUDENT / TEACHER)
+############################################################
+
+### C1. Hồ sơ + số liệu theo role
+GET {{host}}/api/users/me/profile
+Authorization: Bearer {{studentToken}}
+
+### C2. Sửa họ tên / số điện thoại (phone = "" để xóa)
+PATCH {{host}}/api/users/me
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{ "fullName": "Nguyễn Minh Nhật", "phone": "0912345678" }
+
+### C3. Đổi mật khẩu chủ động
+POST {{host}}/api/auth/change-password
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{ "oldPassword": "MySecurePass@2026", "newPassword": "NewPass@20261" }
+
+### C4. Upload avatar (đổi đường dẫn file ảnh thật)
+POST {{host}}/api/users/me/avatar
+Authorization: Bearer {{studentToken}}
+Content-Type: multipart/form-data; boundary=X
+
+--X
+Content-Disposition: form-data; name="file"; filename="avatar.png"
+Content-Type: image/png
+
+< ./avatar.png
+--X--
+
+### C5. Xóa avatar
+DELETE {{host}}/api/users/me/avatar
+Authorization: Bearer {{studentToken}}
+
+### C6. Đăng xuất
+POST {{host}}/api/auth/logout
+Authorization: Bearer {{studentToken}}
+
+############################################################
+# D. TAB TRANG CHỦ
+############################################################
+
+### D1. Home học viên
+GET {{host}}/api/home/student
+Authorization: Bearer {{studentToken}}
+
+### D2. Học viên gọi Home giảng viên -> phải 403
+GET {{host}}/api/home/teacher
+Authorization: Bearer {{studentToken}}
+
+### D3. Home giảng viên (đăng nhập TEACHER + đổi mật khẩu lần đầu trước)
+# @name loginTeacher
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "ha.teacher@gmail.com", "password": "PASTE_TEMP_PASSWORD" }
+
+###
+@teacherToken = {{loginTeacher.response.body.data.token}}
+GET {{host}}/api/home/teacher
+Authorization: Bearer {{teacherToken}}
+
+############################################################
+# E. THÔNG BÁO
+############################################################
+
+### E1. Danh sách (phân trang) / số chưa đọc / đánh dấu đã đọc
+GET {{host}}/api/notifications?page=0&size=20&unreadOnly=false
+Authorization: Bearer {{studentToken}}
+
+###
+GET {{host}}/api/notifications/unread-count
+Authorization: Bearer {{studentToken}}
+
+###
+PATCH {{host}}/api/notifications/read-all
 Authorization: Bearer {{studentToken}}

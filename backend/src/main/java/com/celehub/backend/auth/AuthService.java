@@ -17,6 +17,7 @@ import com.celehub.backend.user.dto.UserDto;
 @Service
 public class AuthService {
     private static final String BAD_CREDENTIALS = "Email hoặc mật khẩu không chính xác";
+    private static final String SAME_PASSWORD = "Mật khẩu mới phải khác mật khẩu hiện tại";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -41,25 +42,33 @@ public class AuthService {
         return new AuthResponse(jwtService.generateToken(u), u.getRole(), u.isMustChangePassword(), UserDto.from(u));
     }
 
-    /** Đổi mật khẩu lần đầu: chỉ hợp lệ khi must_change_password = true. */
+    /** Đổi mật khẩu lần đầu: chỉ hợp lệ khi must_change_password = true, và không được trùng mật khẩu tạm. */
     @Transactional
     public void forceChangePassword(Long userId, String newPassword) {
         User u = load(userId);
         if (!u.isMustChangePassword()) {
             throw new AppException(HttpStatus.BAD_REQUEST, "Tài khoản đã đổi mật khẩu, hãy dùng chức năng Đổi mật khẩu");
         }
+        if (passwordEncoder.matches(newPassword, u.getPasswordHash())) {
+            throw new AppException(HttpStatus.BAD_REQUEST, SAME_PASSWORD);
+        }
         u.setPasswordHash(passwordEncoder.encode(newPassword));
         u.setMustChangePassword(false);
     }
 
-    /** Đổi mật khẩu chủ động (màn Cài đặt) — phải nhập mật khẩu cũ. */
+    /** Đổi mật khẩu chủ động (màn Cá nhân) — phải nhập mật khẩu cũ. */
     @Transactional
     public void changePassword(Long userId, String oldPassword, String newPassword) {
         User u = load(userId);
         if (!passwordEncoder.matches(oldPassword, u.getPasswordHash())) {
             throw new AppException(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không đúng");
         }
+        if (passwordEncoder.matches(newPassword, u.getPasswordHash())) {
+            throw new AppException(HttpStatus.BAD_REQUEST, SAME_PASSWORD);
+        }
         u.setPasswordHash(passwordEncoder.encode(newPassword));
+        // /api/auth/** được miễn chặn must_change_password, nên đổi ở đây cũng phải gỡ cờ
+        u.setMustChangePassword(false);
     }
 
     private User load(Long id) {
