@@ -24,6 +24,12 @@ public interface ApiService {
     @POST("api/auth/change-password")
     Call<ApiResponse<Void>> changePassword(@Body ChangePasswordRequest request);
 
+    @POST("api/auth/forgot-password/request") Call<ApiResponse<Void>> forgotRequest(@Body ForgotPasswordRequest r);
+
+    @POST("api/auth/forgot-password/verify")  Call<ApiResponse<VerifyOtpResponse>> forgotVerify(@Body VerifyOtpRequest r);
+    
+    @POST("api/auth/forgot-password/reset")   Call<ApiResponse<Void>> forgotReset(@Body ResetPasswordRequest r);
+
     @GET("api/users/me")
     Call<ApiResponse<UserDto>> getMe();
 }

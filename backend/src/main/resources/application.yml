@@ -1,17 +1,20 @@
 server:
   port: 8080
+  forward-headers-strategy: framework
 
 spring:
   application:
     name: celehub-backend
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/celehub_db}
-    username: ${DB_USER:celehub_user}
-    password: ${DB_PASSWORD:celehub_dev}
+    url: ${DB_URL:}
+    username: ${DB_USER:}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL:5}
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate        # Schema do Flyway quản lý, Hibernate chỉ kiểm tra khớp entity
+      ddl-auto: validate
     properties:
       hibernate.jdbc.time_zone: Asia/Ho_Chi_Minh
   flyway:
@@ -20,15 +23,31 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 25MB
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
 
 app:
   jwt:
     secret: ${JWT_SECRET:dev-only-secret-change-me-please-32-bytes-minimum!!}
-    expiration-minutes: 10080   # 7 ngày
+    expiration-minutes: 10080
   storage:
-    type: local                 # sau này đổi: firebase | r2
-    local-dir: ./uploads
-    public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}
+    type: ${STORAGE_TYPE:supabase}
+  supabase:
+    url: ${SUPABASE_URL:}
+    service-key: ${SUPABASE_SERVICE_KEY:}
+    bucket: ${SUPABASE_BUCKET:celehub}
   bootstrap:
     admin-email: admin@celehub.edu.vn
-    admin-password: ${ADMIN_PASSWORD:Admin@123456}
+    admin-password: ${ADMIN_PASSWORD:}
+  mail:
+    enabled: ${MAIL_ENABLED:true}
+    from: ${MAIL_FROM:CeLeHub <no-reply@gmail.com>}
