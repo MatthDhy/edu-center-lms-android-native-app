@@ -59,7 +59,7 @@
                     android:padding="6dp"
                     android:text="Đổi ảnh đại diện"
                     android:textColor="#FFFFFF"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- Họ và tên (sửa được) -->

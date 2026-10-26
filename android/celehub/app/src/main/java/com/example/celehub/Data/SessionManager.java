@@ -102,14 +102,17 @@ public class SessionManager {
         return value == null ? "" : value;
     }
 
-    /** "Gia Huy" -> "GH", "Nguyễn Minh Nhật" -> "NN" (chữ cái đầu của từ đầu và từ cuối). */
+    /** "Gia Huy" -> "GH", "Nguyễn Minh Nhật" -> "MN" (chữ cái đầu của từ tên đệm và tên chính). */
     public String getInitials() {
         String name = getFullName().trim();
         if (name.isEmpty()) return "?";
         String[] parts = name.split("\\s+");
-        String first = parts[0].substring(0, 1);
-        String last = parts.length > 1 ? parts[parts.length - 1].substring(0, 1) : "";
-        return (first + last).toUpperCase();
+        if (parts.length == 1) {
+            return parts[0].substring(0, 1).toUpperCase();
+        }
+        String middle = parts[parts.length - 2].substring(0, 1);
+        String last = parts[parts.length - 1].substring(0, 1);
+        return (middle + last).toUpperCase();
     }
 
     /**

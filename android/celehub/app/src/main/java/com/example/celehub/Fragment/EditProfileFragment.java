@@ -61,8 +61,8 @@ public class EditProfileFragment extends Fragment {
         if (!UPDATE_SUPPORTED) {
             etName.setEnabled(false);
             etPhone.setEnabled(false);
-            btnSave.setVisibility(View.GONE);
-            tvChangeAvatar.setVisibility(View.GONE);
+            btnSave.setVisibility(View.VISIBLE);
+            tvChangeAvatar.setVisibility(View.VISIBLE);
             return view;
         }
 
