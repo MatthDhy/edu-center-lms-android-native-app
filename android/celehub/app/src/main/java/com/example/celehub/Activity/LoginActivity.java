@@ -15,6 +15,7 @@ import com.example.celehub.API.ApiErrors;
 import com.example.celehub.Model.ApiResponse;
 import com.example.celehub.Model.AuthResponse;
 import com.example.celehub.Model.LoginRequest;
+import com.example.celehub.Util.FormErrors;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -154,7 +155,7 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            layout.setError(null);
+            FormErrors.clear(layout);
         }
 
         @Override

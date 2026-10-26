@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import com.example.celehub.Data.SessionManager;
 import com.example.celehub.R;
 import com.example.celehub.Util.ChildHeader;
+import com.example.celehub.Util.FormErrors;
 import com.example.celehub.Util.SimpleTextWatcher;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -68,13 +69,13 @@ public class EditProfileFragment extends Fragment {
         etName.addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void onChanged(String text) {
-                tilName.setError(null);
+                FormErrors.clear(tilName);
             }
         });
         etPhone.addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void onChanged(String text) {
-                tilPhone.setError(null);
+                FormErrors.clear(tilPhone);
             }
         });
         tvChangeAvatar.setOnClickListener(v ->

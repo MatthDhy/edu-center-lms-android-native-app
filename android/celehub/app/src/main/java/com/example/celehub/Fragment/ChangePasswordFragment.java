@@ -20,6 +20,8 @@ import com.example.celehub.Model.ApiResponse;
 import com.example.celehub.Model.ChangePasswordRequest;
 import com.example.celehub.R;
 import com.example.celehub.Util.ChildHeader;
+import com.example.celehub.Util.FormErrors;
+import com.example.celehub.Util.PasswordRules;
 import com.example.celehub.Util.SimpleTextWatcher;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -35,9 +37,6 @@ public class ChangePasswordFragment extends Fragment {
     private static final String[] STRENGTH_LABELS = {"", "Yếu", "Trung bình", "Khá", "Mạnh"};
     private static final String[] STRENGTH_COLORS =
             {"#E5E7EB", "#EF4444", "#7B61F0", "#2563EB", "#16A34A"};
-
-    // Backend yêu cầu mật khẩu mới từ 8 ký tự trở lên
-    private static final int MIN_LENGTH = 8;
 
     private TextInputLayout tilCurrent, tilNew, tilConfirm;
     private TextInputEditText etCurrent, etNew, etConfirm;
@@ -72,22 +71,23 @@ public class ChangePasswordFragment extends Fragment {
         etCurrent.addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void onChanged(String text) {
-                tilCurrent.setError(null);
+                FormErrors.clear(tilCurrent);
             }
         });
         etNew.addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void onChanged(String text) {
-                tilNew.setError(null);
                 updateStrength(text);
                 updateConfirmState();
+                FormErrors.clear(tilNew);
+                FormErrors.clear(tilConfirm); // mật khẩu mới đổi thì lỗi "không khớp" cũ không còn đúng
             }
         });
         etConfirm.addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void onChanged(String text) {
-                tilConfirm.setError(null);
                 updateConfirmState();
+                FormErrors.clear(tilConfirm);
             }
         });
 
@@ -101,15 +101,18 @@ public class ChangePasswordFragment extends Fragment {
     // ------------------------------------------------------------------
 
     private void updateStrength(String password) {
-        boolean hasLength = password.length() >= MIN_LENGTH;
-        boolean hasUpper = false, hasLower = false, hasDigit = false;
+        boolean hasLength = PasswordRules.hasMinLength(password);
+        boolean hasUpper = PasswordRules.hasUpper(password);
+        boolean hasLower = PasswordRules.hasLower(password);
+        boolean hasDigit = false;
         for (char c : password.toCharArray()) {
-            if (Character.isUpperCase(c)) hasUpper = true;
-            else if (Character.isLowerCase(c)) hasLower = true;
-            else if (Character.isDigit(c)) hasDigit = true;
+            if (Character.isDigit(c)) {
+                hasDigit = true;
+                break;
+            }
         }
 
-        setRequirement(tvReqLength, "Ít nhất " + MIN_LENGTH + " ký tự", hasLength);
+        setRequirement(tvReqLength, "Ít nhất " + PasswordRules.MIN_LENGTH + " ký tự", hasLength);
         setRequirement(tvReqUpper, "Có chữ hoa", hasUpper);
         setRequirement(tvReqLower, "Có chữ thường", hasLower);
 
@@ -162,13 +165,9 @@ public class ChangePasswordFragment extends Fragment {
             valid = false;
         }
 
-        boolean hasUpper = false, hasLower = false;
-        for (char c : newPass.toCharArray()) {
-            if (Character.isUpperCase(c)) hasUpper = true;
-            if (Character.isLowerCase(c)) hasLower = true;
-        }
-        if (newPass.length() < MIN_LENGTH || !hasUpper || !hasLower) {
-            tilNew.setError("Mật khẩu mới chưa đáp ứng yêu cầu");
+        String ruleError = PasswordRules.errorOf(newPass);
+        if (ruleError != null) {
+            tilNew.setError(ruleError);
             valid = false;
         } else if (newPass.equals(current)) {
             tilNew.setError("Mật khẩu mới phải khác mật khẩu hiện tại");
@@ -200,8 +199,11 @@ public class ChangePasswordFragment extends Fragment {
                         } else {
                             String message = ApiErrors.messageOf(response, "Đổi mật khẩu thất bại");
                             if (response.code() == 400) {
-                                // "Mật khẩu hiện tại không đúng"
-                                tilCurrent.setError(message);
+                                if (message.contains("hiện tại không đúng")) {
+                                    tilCurrent.setError(message);   // sai mật khẩu hiện tại
+                                } else {
+                                    tilNew.setError(message);       // luật mật khẩu mới, hoặc trùng mật khẩu cũ
+                                }
                             } else {
                                 Toast.makeText(requireContext(), message,
                                         Toast.LENGTH_LONG).show();

@@ -1,10 +1,14 @@
 package com.example.celehub.Activity;
+
 import com.example.celehub.API.ApiClient;
 import com.example.celehub.API.ApiErrors;
 import com.example.celehub.Data.SessionManager;
 import com.example.celehub.Model.ApiResponse;
 import com.example.celehub.Model.ForceChangePasswordRequest;
 import com.example.celehub.R;
+import com.example.celehub.Util.FormErrors;
+import com.example.celehub.Util.PasswordRules;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -32,9 +36,6 @@ public class ResetPasswordActivity extends AppCompatActivity {
     public static final String MODE_FIRST_LOGIN = "first_login";
     public static final String MODE_FORGOT = "forgot";
 
-    // Backend yêu cầu mật khẩu từ 8 ký tự trở lên
-    private static final int MIN_PASSWORD_LENGTH = 8;
-
     private TextInputLayout tilNew, tilConfirm;
     private TextInputEditText etNew, etConfirm;
     private MaterialButton btnReset;
@@ -53,6 +54,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
         etConfirm = findViewById(R.id.etConfirmPassword);
         btnReset = findViewById(R.id.btnReset);
 
+        // Dòng gợi ý luật mật khẩu ngay dưới ô nhập (tự ẩn khi có lỗi, hiện lại khi hết lỗi)
+        tilNew.setHelperText(PasswordRules.HINT);
+
         etNew.addTextChangedListener(new ClearErrorWatcher(tilNew));
         etConfirm.addTextChangedListener(new ClearErrorWatcher(tilConfirm));
 
@@ -64,8 +68,11 @@ public class ResetPasswordActivity extends AppCompatActivity {
         String confirm = etConfirm.getText() == null ? "" : etConfirm.getText().toString();
 
         boolean valid = true;
-        if (newPass.length() < MIN_PASSWORD_LENGTH) {
-            tilNew.setError("Mật khẩu tối thiểu " + MIN_PASSWORD_LENGTH + " ký tự");
+
+        // Luật mật khẩu (8 ký tự, chữ hoa, chữ thường) khai báo chung trong PasswordRules
+        String ruleError = PasswordRules.errorOf(newPass);
+        if (ruleError != null) {
+            tilNew.setError(ruleError);
             valid = false;
         }
         if (!newPass.equals(confirm)) {
@@ -103,9 +110,14 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                     "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
                             goTo(MainActivity.class);
                         } else {
-                            Toast.makeText(ResetPasswordActivity.this,
-                                    ApiErrors.messageOf(response, "Đổi mật khẩu thất bại"),
-                                    Toast.LENGTH_LONG).show();
+                            String message = ApiErrors.messageOf(response, "Đổi mật khẩu thất bại");
+                            if (response.code() == 400) {
+                                // Ví dụ: "Mật khẩu mới phải khác mật khẩu hiện tại" (trùng mật khẩu tạm)
+                                tilNew.setError(message);
+                            } else {
+                                Toast.makeText(ResetPasswordActivity.this, message,
+                                        Toast.LENGTH_LONG).show();
+                            }
                         }
                     }
 
@@ -130,7 +142,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    /** Gõ lại thì xóa thông báo lỗi của ô tương ứng. */
+    /** Gõ lại thì xóa thông báo lỗi (và thu hẹp luôn dòng lỗi) của ô tương ứng. */
     private static class ClearErrorWatcher implements TextWatcher {
         private final TextInputLayout layout;
 
@@ -140,7 +152,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
         @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) { }
         @Override public void onTextChanged(CharSequence s, int st, int b, int c) {
-            layout.setError(null);
+            FormErrors.clear(layout);
         }
         @Override public void afterTextChanged(Editable s) { }
     }
