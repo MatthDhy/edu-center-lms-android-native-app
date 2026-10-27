@@ -2,12 +2,14 @@ package com.celehub.backend.config;
 
 import java.nio.file.Path;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/** Phục vụ file upload local tại /files/** (chỉ dùng khi storage.type=local). */
+/** Phục vụ file upload local tại /files/** (chỉ khi storage.type=local). */
 @Configuration
+@ConditionalOnProperty(name = "app.storage.type", havingValue = "local")
 public class WebConfig implements WebMvcConfigurer {
     private final AppProperties props;
 
