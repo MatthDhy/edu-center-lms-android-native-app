@@ -7,6 +7,8 @@ import retrofit2.http.POST;
 
 import com.example.celehub.Model.ApiResponse;
 import com.example.celehub.Model.AuthResponse;
+import com.example.celehub.Model.HomeStudentResponse;
+import com.example.celehub.Model.HomeTeacherResponse;
 import com.example.celehub.Model.LoginRequest;
 import com.example.celehub.Model.ForceChangePasswordRequest;
 import com.example.celehub.Model.ChangePasswordRequest;
@@ -26,4 +28,10 @@ public interface ApiService {
 
     @GET("api/users/me")
     Call<ApiResponse<UserDto>> getMe();
+
+    @GET("api/home/student")
+    Call<ApiResponse<HomeStudentResponse>> getHomeStudent();
+
+    @GET("api/home/teacher")
+    Call<ApiResponse<HomeTeacherResponse>> getHomeTeacher();
 }

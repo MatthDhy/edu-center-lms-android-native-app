@@ -115,9 +115,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void onLoginSuccess(AuthResponse auth) {
-        // Ứng dụng này dành cho học viên. Tài khoản giáo viên / admin dùng web admin.
-        if (!"STUDENT".equals(auth.getRole())) {
-            Toast.makeText(this, "Tài khoản này không dùng trên ứng dụng học viên",
+        // App dành cho học viên và giảng viên. Tài khoản admin dùng web admin.
+        String role = auth.getRole();
+        if (!"STUDENT".equals(role) && !"TEACHER".equals(role)) {
+            Toast.makeText(this, "Tài khoản này không dùng trên ứng dụng",
                     Toast.LENGTH_LONG).show();
             return;
         }
