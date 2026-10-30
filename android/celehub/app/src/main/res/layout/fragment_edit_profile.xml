@@ -138,6 +138,7 @@
 
             <!-- Mã học viên (chỉ đọc) -->
             <TextView
+                android:id="@+id/tvCodeLabel"
                 style="@style/Widget.App.FieldLabel"
                 android:text="Mã học viên (không thể thay đổi)" />
 

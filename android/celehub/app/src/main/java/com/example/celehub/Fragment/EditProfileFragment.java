@@ -57,6 +57,7 @@ public class EditProfileFragment extends Fragment {
         etPhone.setText(session.getPhone());
         etEmail.setText(session.getEmail());
         etStudentCode.setText(session.getDisplayCode());
+        ((TextView) view.findViewById(R.id.tvCodeLabel)).setText(session.getCodeLabel());
 
         if (!UPDATE_SUPPORTED) {
             etName.setEnabled(false);

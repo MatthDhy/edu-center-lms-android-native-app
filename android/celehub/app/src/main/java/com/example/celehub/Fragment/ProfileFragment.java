@@ -71,7 +71,7 @@ public class ProfileFragment extends Fragment {
     private void bindUser() {
         tvInitials.setText(session.getInitials());
         tvName.setText(session.getFullName());
-        tvMeta.setText(session.getDisplayCode() + " • Học viên");
+        tvMeta.setText(session.getDisplayCode() + " • " + session.getRoleLabel());
         tvEmail.setText(session.getEmail());
 
         String phone = session.getPhone();

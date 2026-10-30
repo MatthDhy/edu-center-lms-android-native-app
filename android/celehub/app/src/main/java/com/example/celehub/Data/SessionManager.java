@@ -120,8 +120,18 @@ public class SessionManager {
      * TẠM THỜI: backend chưa có trường mã học viên nên mã này được tạo từ id người dùng.
      * Khi backend thêm trường studentCode vào UserDto thì đổi hàm này trả về giá trị đó.
      */
+    public boolean isTeacher() {
+        return "TEACHER".equals(getRole());
+    }
+    public String getRoleLabel() {
+        return isTeacher() ? "Giảng viên" : "Học viên";
+    }
+    public String getCodeLabel() {
+        return isTeacher() ? "Mã giảng viên (không thể thay đổi)" : "Mã học viên (không thể thay đổi)";
+    }
     public String getDisplayCode() {
         long id = getUserId();
-        return id < 0 ? "" : String.format("HV%04d", id);
+        if (id < 0) return "";
+        return String.format(isTeacher() ? "GV%04d" : "HV%04d", id);
     }
 }

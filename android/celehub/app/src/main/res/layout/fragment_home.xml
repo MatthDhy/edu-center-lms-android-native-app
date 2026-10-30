@@ -131,7 +131,7 @@
                 android:fontFamily="@font/inter_bold"
                 android:text="Toán 11"
                 android:textColor="#FFFFFF"
-                android:textSize="24sp" />
+                android:textSize="22sp" />
 
             <TextView
                 android:id="@+id/tvLessonTime"
