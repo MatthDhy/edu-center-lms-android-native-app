@@ -8,9 +8,9 @@ spring:
   application:
     name: celehub-backend
   datasource:
-    url: ${DB_URL:}
-    username: ${DB_USER:}
-    password: ${DB_PASSWORD:}
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: ${DB_POOL:5}
   jpa:
@@ -28,8 +28,8 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -44,12 +44,17 @@ app:
   storage:
     type: ${STORAGE_TYPE:supabase}
   supabase:
-    url: ${SUPABASE_URL:}
-    service-key: ${SUPABASE_SERVICE_KEY:}
+    url: ${SUPABASE_URL}
+    service-key: ${SUPABASE_SERVICE_KEY}
     bucket: ${SUPABASE_BUCKET:celehub}
   bootstrap:
     admin-email: admin@celehub.edu.vn
-    admin-password: ${ADMIN_PASSWORD:}
+    admin-password: ${ADMIN_PASSWORD}
   mail:
     enabled: ${MAIL_ENABLED:true}
     from: ${MAIL_FROM:CeLeHub <no-reply@gmail.com>}
+  cors:
+    allowed-origin-patterns: ${CORS_ORIGINS:http://localhost:*,http://127.0.0.1:*,http://192.168.*:*,https://*.celehub.edu.vn}
+  logging:
+  level:
+    org.springframework.web.cors: DEBUG

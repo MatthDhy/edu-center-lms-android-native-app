@@ -40,15 +40,28 @@ public class Lesson {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private LessonStatus status;
+    private LessonStatus status = LessonStatus.SCHEDULED;
 
     protected Lesson() {}
+
+    public Lesson(Course course, String room, String topic, LocalDateTime startTime, LocalDateTime endTime) {
+        this.course = course;
+        this.room = room;
+        this.topic = topic;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 
     public Long getId() { return id; }
     public Course getCourse() { return course; }
     public String getRoom() { return room; }
+    public void setRoom(String room) { this.room = room; }
     public String getTopic() { return topic; }
+    public void setTopic(String topic) { this.topic = topic; }
     public LocalDateTime getStartTime() { return startTime; }
+    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
     public LocalDateTime getEndTime() { return endTime; }
+    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
     public LessonStatus getStatus() { return status; }
+    public void setStatus(LessonStatus status) { this.status = status; }
 }

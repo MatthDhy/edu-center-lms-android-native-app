@@ -6,11 +6,11 @@ services:
     env_file: .env
     environment:
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=70"
-    ports: ["127.0.0.1:8080:8080"]
+    ports: ["8080:8080"]
 
   web-admin:
     build: ./web-admin
     container_name: celehub_webadmin
     restart: unless-stopped
     depends_on: [backend]
-    ports: ["127.0.0.1:3000:80"]
+    ports: ["3000:80"]

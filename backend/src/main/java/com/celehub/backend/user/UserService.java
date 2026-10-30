@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -87,6 +88,10 @@ public class UserService {
     @Transactional
     public String resetPassword(Long id) {
         User u = load(id);
+        if (u.getRole() == Role.ADMIN) {
+            // Admin bị ép đổi mật khẩu sẽ bị 403 ở mọi API admin mà Web Admin lại không có màn đổi mật khẩu -> tự khóa mình
+            throw new AppException(HttpStatus.BAD_REQUEST, "Không thể cấp lại mật khẩu cho tài khoản quản trị");
+        }
         String tempPassword = generateTempPassword(10);
         u.setPasswordHash(passwordEncoder.encode(tempPassword));
         u.setMustChangePassword(true);
@@ -94,6 +99,27 @@ public class UserService {
 
         mailService.sendWelcome(u.getEmail(), u.getFullName(), tempPassword);
         return tempPassword;
+    }
+
+    /**
+     * Xóa hẳn tài khoản. Chỉ xóa được khi chưa phát sinh dữ liệu (lớp, bài nộp, điểm danh, học phí...).
+     * Thông báo, token thiết bị, OTP bị xóa theo (ON DELETE CASCADE). Đã có dữ liệu thì trả 409 và nên dùng "Khóa".
+     */
+    @Transactional
+    public void deleteUser(Long id) {
+        User u = load(id);
+        if (u.getRole() == Role.ADMIN) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Không thể xóa tài khoản quản trị");
+        }
+        String avatar = u.getAvatarUrl();
+        try {
+            userRepository.delete(u);
+            userRepository.flush();   // ép chạy SQL ngay để bắt lỗi khóa ngoại tại đây
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(HttpStatus.CONFLICT,
+                    "Tài khoản đã có dữ liệu liên quan (lớp học, bài nộp, điểm danh...). Hãy khóa tài khoản thay vì xóa.");
+        }
+        if (avatar != null) storageService.delete(avatar);
     }
 
     public Map<String, Object> getStats() {

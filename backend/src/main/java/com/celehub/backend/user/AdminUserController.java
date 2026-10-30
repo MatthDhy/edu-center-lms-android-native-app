@@ -3,6 +3,7 @@ package com.celehub.backend.user;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,9 +56,15 @@ public class AdminUserController {
         return ApiResponse.success("Đã đặt lại mật khẩu tạm thành công", Map.of("tempPassword", tempPass));
     }
 
+    /** Xóa hẳn tài khoản chưa phát sinh dữ liệu; đã có dữ liệu thì 409 (hãy khóa). */
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ApiResponse.success("Đã xóa tài khoản", null);
+    }
+
     @GetMapping("/stats")
     public ApiResponse<Map<String, Object>> stats() {
         return ApiResponse.success(userService.getStats());
     }
 }
-

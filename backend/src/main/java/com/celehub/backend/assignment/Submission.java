@@ -30,6 +30,9 @@ public class Submission {
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
 
+    @Column(name = "file_url", length = 500)
+    private String fileUrl;
+
     @Column(name = "submitted_at", nullable = false)
     private LocalDateTime submittedAt;
 
@@ -39,12 +42,41 @@ public class Submission {
     /** null = chưa chấm */
     private BigDecimal score;
 
+    private String feedback;
+
+    @Column(name = "graded_at")
+    private LocalDateTime gradedAt;
+
     protected Submission() {}
+
+    public Submission(Assignment assignment, User student, String fileUrl, LocalDateTime submittedAt, boolean late) {
+        this.assignment = assignment;
+        this.student = student;
+        this.fileUrl = fileUrl;
+        this.submittedAt = submittedAt;
+        this.late = late;
+    }
+
+    /** Nộp lại bài (chỉ khi chưa được chấm). */
+    public void resubmit(String fileUrl, LocalDateTime submittedAt, boolean late) {
+        this.fileUrl = fileUrl;
+        this.submittedAt = submittedAt;
+        this.late = late;
+    }
+
+    public void grade(BigDecimal score, String feedback, LocalDateTime gradedAt) {
+        this.score = score;
+        this.feedback = feedback;
+        this.gradedAt = gradedAt;
+    }
 
     public Long getId() { return id; }
     public Assignment getAssignment() { return assignment; }
     public User getStudent() { return student; }
+    public String getFileUrl() { return fileUrl; }
     public LocalDateTime getSubmittedAt() { return submittedAt; }
     public boolean isLate() { return late; }
     public BigDecimal getScore() { return score; }
+    public String getFeedback() { return feedback; }
+    public LocalDateTime getGradedAt() { return gradedAt; }
 }

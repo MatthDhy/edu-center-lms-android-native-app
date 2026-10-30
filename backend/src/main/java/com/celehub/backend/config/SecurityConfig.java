@@ -2,6 +2,7 @@ package com.celehub.backend.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -58,11 +59,15 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /** Cho Web Admin (React/Vue) chạy dev ở localhost gọi API. Mobile không cần CORS. */
+    /**
+     * Cho Web Admin gọi API từ trình duyệt. Danh sách origin lấy từ app.cors.allowed-origin-patterns
+     * (biến môi trường CORS_ORIGINS, cách nhau bởi dấu phẩy). Mobile không cần CORS.
+     */
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*}") List<String> patterns) {
         CorsConfiguration c = new CorsConfiguration();
-        c.setAllowedOriginPatterns(List.of("http://localhost:*", "https://*.celehub.edu.vn"));
+        c.setAllowedOriginPatterns(patterns.stream().map(String::trim).filter(s -> !s.isEmpty()).toList());
         c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         c.setAllowedHeaders(List.of("*"));
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();

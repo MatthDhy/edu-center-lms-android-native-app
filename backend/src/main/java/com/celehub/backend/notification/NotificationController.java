@@ -3,6 +3,7 @@ package com.celehub.backend.notification;
 import java.util.Map;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,5 +48,11 @@ public class NotificationController {
     @PatchMapping("/read-all")
     public ApiResponse<Map<String, Integer>> markAllRead(@AuthenticationPrincipal AuthUser me) {
         return ApiResponse.success("Đã đánh dấu tất cả là đã đọc", Map.of("updated", notificationService.markAllRead(me.id())));
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@AuthenticationPrincipal AuthUser me, @PathVariable Long id) {
+        notificationService.delete(me.id(), id);
+        return ApiResponse.success("Đã xóa thông báo", null);
     }
 }

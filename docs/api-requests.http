@@ -1,152 +1,105 @@
-### Dùng với VS Code extension "REST Client" (humao.rest-client)
+### Dùng với VS Code REST Client. Cần @adminToken, @teacherToken, @studentToken (lấy từ /api/auth/login)
+@host = http://localhost:8080
 
-### 1. Login admin (mặc định)
-# @name loginAdmin
-POST {{host}}/api/auth/login
-Content-Type: application/json
-
-{ "email": "{{adminEmail}}", "password": "{{adminPassword}}" }
-
-### A2. Admin tạo học viên (xem mật khẩu tạm trong log backend: [MAIL STUB])
-@adminToken = {{loginAdmin.response.body.data.token}}
-POST {{host}}/api/admin/users
+### 1. Admin tạo lớp (teacherId = id giảng viên)
+POST {{host}}/api/admin/courses
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
-{ "fullName": "Nguyễn Minh Nhật", "email": "nhat@gmail.com", "phone": "0912345678", "role": "STUDENT" }
+{ "courseName": "Toán 11A", "description": "Nâng cao", "teacherId": 2, "tuitionFee": 1500000, "totalSessions": 12 }
 
-### A2b. Admin tạo giảng viên
-POST {{host}}/api/admin/users
+### 2. Sinh lịch: thứ 2 và thứ 4, 18:00-19:30, 12 buổi
+POST {{host}}/api/admin/courses/1/lessons/generate
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
-{ "fullName": "Nguyễn Thu Hà", "email": "ha.teacher@gmail.com", "phone": "0987654321", "role": "TEACHER" }
+{ "startDate": "2026-11-02", "daysOfWeek": [1,3], "startTime": "18:00", "endTime": "19:30", "room": "P.301", "sessions": 12 }
 
-### A3. Học viên login bằng mật khẩu tạm (điền mật khẩu từ log)
-# @name loginStudent
-POST {{host}}/api/auth/login
+### 3. Gọi lại đúng yêu cầu trên -> phải 409 (trùng giờ GV / phòng)
+
+### 4. Xếp học viên
+POST {{host}}/api/admin/courses/1/enrollments
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
-{ "email": "nhat@gmail.com", "password": "PASTE_TEMP_PASSWORD" }
+{ "studentIds": [3, 4] }
 
-### A4. Chưa đổi mật khẩu -> gọi API nghiệp vụ phải bị 403
-@studentToken = {{loginStudent.response.body.data.token}}
-GET {{host}}/api/users/me
+### 5. Học viên xem lớp / lịch
+GET {{host}}/api/courses/mine
 Authorization: Bearer {{studentToken}}
 
-### A5. Đổi mật khẩu lần đầu (mật khẩu mới phải khác mật khẩu tạm, >= 8 ký tự)
-POST {{host}}/api/auth/force-change-password
-Authorization: Bearer {{studentToken}}
-Content-Type: application/json
-
-{ "newPassword": "MySecurePass@2026" }
-
-### A6. Gọi lại /me -> 200
-GET {{host}}/api/users/me
+###
+GET {{host}}/api/lessons?from=2026-11-01&to=2026-11-30
 Authorization: Bearer {{studentToken}}
 
-############################################################
-# B. QUÊN MẬT KHẨU (public) — OTP lấy từ log backend
-############################################################
+### 6. Giảng viên giao bài (multipart)
+POST {{host}}/api/courses/1/assignments
+Authorization: Bearer {{teacherToken}}
+Content-Type: multipart/form-data; boundary=X
 
-### B1. Yêu cầu OTP (luôn 200, kể cả email không tồn tại)
-POST {{host}}/api/auth/forgot-password/request
-Content-Type: application/json
+--X
+Content-Disposition: form-data; name="title"
 
-{ "email": "nhat@gmail.com" }
+Bài tập hình học tuần 1
+--X
+Content-Disposition: form-data; name="deadline"
 
-### B2. Xác thực OTP -> nhận resetToken (sai > 5 lần thì OTP chết)
-# @name verifyOtp
-POST {{host}}/api/auth/forgot-password/verify
-Content-Type: application/json
+2026-11-10T23:59:00
+--X
+Content-Disposition: form-data; name="maxScore"
 
-{ "email": "nhat@gmail.com", "otp": "PASTE_OTP_FROM_LOG" }
+10
+--X--
 
-### B3. Đặt mật khẩu mới bằng resetToken
-@resetToken = {{verifyOtp.response.body.data.resetToken}}
-POST {{host}}/api/auth/forgot-password/reset
-Content-Type: application/json
-
-{ "resetToken": "{{resetToken}}", "newPassword": "AnotherPass@2026" }
-
-############################################################
-# C. TAB CÁ NHÂN (STUDENT / TEACHER)
-############################################################
-
-### C1. Hồ sơ + số liệu theo role
-GET {{host}}/api/users/me/profile
+### 7. Học viên xem việc cần làm
+GET {{host}}/api/assignments/mine?status=TODO
 Authorization: Bearer {{studentToken}}
 
-### C2. Sửa họ tên / số điện thoại (phone = "" để xóa)
-PATCH {{host}}/api/users/me
-Authorization: Bearer {{studentToken}}
-Content-Type: application/json
-
-{ "fullName": "Nguyễn Minh Nhật", "phone": "0912345678" }
-
-### C3. Đổi mật khẩu chủ động
-POST {{host}}/api/auth/change-password
-Authorization: Bearer {{studentToken}}
-Content-Type: application/json
-
-{ "oldPassword": "MySecurePass@2026", "newPassword": "NewPass@20261" }
-
-### C4. Upload avatar (đổi đường dẫn file ảnh thật)
-POST {{host}}/api/users/me/avatar
+### 8. Học viên nộp bài (đổi đường dẫn ảnh thật)
+POST {{host}}/api/assignments/1/submit
 Authorization: Bearer {{studentToken}}
 Content-Type: multipart/form-data; boundary=X
 
 --X
-Content-Disposition: form-data; name="file"; filename="avatar.png"
-Content-Type: image/png
+Content-Disposition: form-data; name="file"; filename="bai_nop.jpg"
+Content-Type: image/jpeg
 
-< ./avatar.png
+< ./bai_nop.jpg
 --X--
 
-### C5. Xóa avatar
-DELETE {{host}}/api/users/me/avatar
-Authorization: Bearer {{studentToken}}
-
-### C6. Đăng xuất
-POST {{host}}/api/auth/logout
-Authorization: Bearer {{studentToken}}
-
-############################################################
-# D. TAB TRANG CHỦ
-############################################################
-
-### D1. Home học viên
-GET {{host}}/api/home/student
-Authorization: Bearer {{studentToken}}
-
-### D2. Học viên gọi Home giảng viên -> phải 403
-GET {{host}}/api/home/teacher
-Authorization: Bearer {{studentToken}}
-
-### D3. Home giảng viên (đăng nhập TEACHER + đổi mật khẩu lần đầu trước)
-# @name loginTeacher
-POST {{host}}/api/auth/login
-Content-Type: application/json
-
-{ "email": "ha.teacher@gmail.com", "password": "PASTE_TEMP_PASSWORD" }
-
-###
-@teacherToken = {{loginTeacher.response.body.data.token}}
-GET {{host}}/api/home/teacher
+### 9. Giảng viên xem Đã nộp / Chưa nộp, nhắc, chấm
+GET {{host}}/api/assignments/1/submissions
 Authorization: Bearer {{teacherToken}}
 
-############################################################
-# E. THÔNG BÁO
-############################################################
-
-### E1. Danh sách (phân trang) / số chưa đọc / đánh dấu đã đọc
-GET {{host}}/api/notifications?page=0&size=20&unreadOnly=false
-Authorization: Bearer {{studentToken}}
+###
+POST {{host}}/api/assignments/1/remind-all
+Authorization: Bearer {{teacherToken}}
 
 ###
-GET {{host}}/api/notifications/unread-count
+PATCH {{host}}/api/submissions/1/grade
+Authorization: Bearer {{teacherToken}}
+Content-Type: application/json
+
+{ "score": 8.5, "feedback": "Làm tốt, chú ý câu 3" }
+
+### 10. Học viên xem chuông thông báo
+GET {{host}}/api/notifications?unreadOnly=true
 Authorization: Bearer {{studentToken}}
 
-###
-PATCH {{host}}/api/notifications/read-all
+### 11. Admin gửi thông báo chung
+POST {{host}}/api/admin/notifications/broadcast
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "title": "Nghỉ lễ 2/9", "content": "Trung tâm nghỉ ngày 2/9", "target": "ALL" }
+
+### 12. Phân quyền: học viên giao bài -> 403 ; GV lớp khác chấm bài -> 403
+POST {{host}}/api/courses/1/assignments
 Authorization: Bearer {{studentToken}}
+Content-Type: multipart/form-data; boundary=X
+
+--X
+Content-Disposition: form-data; name="title"
+
+x
+--X--
