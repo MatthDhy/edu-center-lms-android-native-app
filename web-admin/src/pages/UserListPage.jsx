@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Search, PlusCircle, RefreshCw, Lock, Unlock, KeyRound,
+  Search, PlusCircle, RefreshCw, Lock, Unlock, KeyRound, Trash2,
   Filter, ChevronDown, UserX, UserCheck, Mail, Phone, Calendar
 } from 'lucide-react';
 import { adminApi } from '../api/client';
 import CreateUserModal from '../components/CreateUserModal';
 import ResetPasswordModal from '../components/ResetPasswordModal';
+import ConfirmModal from '../components/ConfirmModal';
 
 function StatusBadge({ status }) {
   return status === 'ACTIVE' ? (
@@ -19,7 +20,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function UserTable({ users, onToggleStatus, onResetPassword, updatingId }) {
+function UserTable({ users, onToggleStatus, onResetPassword, onDelete, updatingId }) {
   if (users.length === 0) {
     return (
       <div className="py-20 text-center text-sm text-slate-400">
@@ -118,6 +119,13 @@ function UserTable({ users, onToggleStatus, onResetPassword, updatingId }) {
                       <Unlock className="w-4 h-4" />
                     </button>
                   )}
+                  <button
+                    onClick={() => onDelete(u)}
+                    title="Xóa tài khoản"
+                    className="p-2 rounded-lg text-slate-500 hover:text-white hover:bg-rose-600 border border-slate-200 hover:border-rose-600 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </td>
             </tr>
@@ -128,13 +136,16 @@ function UserTable({ users, onToggleStatus, onResetPassword, updatingId }) {
   );
 }
 
-export default function UserListPage({ role, title, subtitle, roleColor = 'blue' }) {
+export default function UserListPage({ role, title, subtitle }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [resetTarget, setResetTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const [updatingId, setUpdatingId] = useState(null);
 
   const fetchUsers = useCallback(async () => {
@@ -169,6 +180,26 @@ export default function UserListPage({ role, title, subtitle, roleColor = 'blue'
       alert('Không thể cập nhật trạng thái: ' + err.message);
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const openDelete = (user) => {
+    setDeleteError('');
+    setDeleteTarget(user);
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await adminApi.deleteUser(deleteTarget.id);
+      setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      // 409: tài khoản đã có dữ liệu (lớp, bài nộp...) -> gợi ý khóa thay vì xóa
+      setDeleteError(err.message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -271,6 +302,7 @@ export default function UserListPage({ role, title, subtitle, roleColor = 'blue'
           users={users}
           onToggleStatus={handleToggleStatus}
           onResetPassword={(u) => setResetTarget(u)}
+          onDelete={openDelete}
           updatingId={updatingId}
         />
       )}
@@ -287,6 +319,25 @@ export default function UserListPage({ role, title, subtitle, roleColor = 'blue'
         onClose={() => setResetTarget(null)}
         user={resetTarget}
         onSuccess={fetchUsers}
+      />
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        title="Xóa tài khoản"
+        danger
+        confirmText="Xóa vĩnh viễn"
+        loading={deleting}
+        error={deleteError}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        message={
+          deleteTarget && (
+            <>
+              Xóa vĩnh viễn <strong>{deleteTarget.fullName}</strong> ({deleteTarget.email})? Không thể hoàn tác.
+              <br />
+              Chỉ xóa được tài khoản chưa có lớp học, bài nộp hay điểm danh; nếu đã có dữ liệu hãy dùng nút <strong>Khóa</strong>.
+            </>
+          )
+        }
       />
     </div>
   );

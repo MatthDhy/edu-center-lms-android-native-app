@@ -1,16 +1,39 @@
 import React from 'react';
-import { LayoutDashboard, GraduationCap, Users, Database, LogOut, BookOpen } from 'lucide-react';
+import {
+  LayoutDashboard, GraduationCap, Database, LogOut, BookOpen,
+  School, CalendarDays, ClipboardList, Megaphone,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+const GROUPS = [
+  {
+    label: 'Tổng quan',
+    items: [{ id: 'dashboard', label: 'Tổng quan & Thống kê', icon: LayoutDashboard }],
+  },
+  {
+    label: 'Tài khoản',
+    items: [
+      { id: 'teachers', label: 'Quản lý Giảng viên', icon: BookOpen },
+      { id: 'students', label: 'Quản lý Học viên', icon: GraduationCap },
+    ],
+  },
+  {
+    label: 'Đào tạo',
+    items: [
+      { id: 'courses', label: 'Lớp học', icon: School },
+      { id: 'timetable', label: 'Thời khóa biểu', icon: CalendarDays },
+      { id: 'assignments', label: 'Theo dõi bài tập', icon: ClipboardList },
+      { id: 'notifications', label: 'Gửi thông báo', icon: Megaphone },
+    ],
+  },
+  {
+    label: 'Hệ thống',
+    items: [{ id: 'architecture', label: 'Cơ chế Nối DB & Role', icon: Database }],
+  },
+];
 
 export default function Sidebar({ activeTab, setActiveTab }) {
   const { logout, user } = useAuth();
-
-  const navItems = [
-    { id: 'dashboard', label: 'Tổng quan & Thống kê', icon: LayoutDashboard },
-    { id: 'teachers', label: 'Quản lý Giảng viên', icon: BookOpen },
-    { id: 'students', label: 'Quản lý Học viên', icon: GraduationCap },
-    { id: 'architecture', label: 'Cơ chế Nối DB & Role', icon: Database },
-  ];
 
   return (
     <aside className="w-64 bg-slate-900 text-slate-200 flex flex-col shrink-0 min-h-screen">
@@ -26,28 +49,34 @@ export default function Sidebar({ activeTab, setActiveTab }) {
       </div>
 
       {/* Navigation Links */}
-      <nav className="p-4 space-y-1.5 flex-1">
-        <div className="text-xs font-semibold text-slate-500 uppercase px-3 mb-2 tracking-wider">
-          Phân hệ Quản trị
-        </div>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30 font-semibold'
-                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
-              }`}
-            >
-              <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
+      <nav className="p-4 space-y-4 flex-1 overflow-y-auto">
+        {GROUPS.map((group) => (
+          <div key={group.label}>
+            <div className="text-xs font-semibold text-slate-500 uppercase px-3 mb-2 tracking-wider">
+              {group.label}
+            </div>
+            <div className="space-y-1.5">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30 font-semibold'
+                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* User profile & Logout */}

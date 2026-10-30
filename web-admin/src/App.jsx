@@ -6,6 +6,10 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import UserListPage from './pages/UserListPage';
 import ArchitecturePage from './pages/ArchitecturePage';
+import CoursesPage from './pages/CoursesPage';
+import TimetablePage from './pages/TimetablePage';
+import AssignmentsPage from './pages/AssignmentsPage';
+import BroadcastPage from './pages/BroadcastPage';
 import CreateUserModal from './components/CreateUserModal';
 
 const PAGE_META = {
@@ -15,11 +19,27 @@ const PAGE_META = {
   },
   teachers: {
     title: 'Quản lý Giảng viên',
-    subtitle: 'Cấp tài khoản, khóa/mở khóa, reset mật khẩu Giảng viên (ROLE_TEACHER)'
+    subtitle: 'Cấp tài khoản, khóa/mở khóa, xóa, reset mật khẩu Giảng viên (ROLE_TEACHER)'
   },
   students: {
     title: 'Quản lý Học viên',
-    subtitle: 'Cấp tài khoản, khóa/mở khóa, reset mật khẩu Học viên (ROLE_STUDENT)'
+    subtitle: 'Cấp tài khoản, khóa/mở khóa, xóa, reset mật khẩu Học viên (ROLE_STUDENT)'
+  },
+  courses: {
+    title: 'Quản lý Lớp học',
+    subtitle: 'Tạo lớp, gán giảng viên, xếp lịch học và xếp học viên vào lớp'
+  },
+  timetable: {
+    title: 'Thời khóa biểu',
+    subtitle: 'Lưới tuần theo phòng học, cảnh báo trùng giờ giảng viên / phòng'
+  },
+  assignments: {
+    title: 'Theo dõi bài tập',
+    subtitle: 'Xem tiến độ nộp bài và điểm của từng lớp (giảng viên giao/chấm trên app)'
+  },
+  notifications: {
+    title: 'Gửi thông báo chung',
+    subtitle: 'Thông báo tới tất cả, học viên, giảng viên hoặc một lớp học'
   },
   architecture: {
     title: 'Cơ chế Nối DB & Phân quyền',
@@ -72,6 +92,10 @@ export default function App() {
               subtitle="Quản lý tất cả tài khoản có vai trò STUDENT — Sử dụng app Android phiên bản Học viên"
             />
           )}
+          {activeTab === 'courses' && <CoursesPage />}
+          {activeTab === 'timetable' && <TimetablePage />}
+          {activeTab === 'assignments' && <AssignmentsPage />}
+          {activeTab === 'notifications' && <BroadcastPage />}
           {activeTab === 'architecture' && <ArchitecturePage />}
         </main>
       </div>
