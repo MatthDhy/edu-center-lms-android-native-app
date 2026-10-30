@@ -1,5 +1,6 @@
 package com.example.celehub.Fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -196,13 +197,28 @@ public class ProfileFragment extends Fragment {
     }
 
     private void logout() {
-        // Backend dùng JWT không lưu phiên trên server nên chỉ cần xóa token ở máy
-        session.clear();
+        // Báo server trước rồi mới xóa token. Nếu xóa trước thì lệnh gọi sẽ không còn token.
+        // Dù thành công hay lỗi mạng đều đăng xuất ở máy.
+        Context app = requireContext().getApplicationContext();
+        ApiClient.get(app).logout().enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> res) {
+                finishLogout(app);
+            }
 
-        Intent intent = new Intent(requireContext(), LoginActivity.class);
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                finishLogout(app);
+            }
+        });
+    }
+
+    private static void finishLogout(Context app) {
+        SessionManager.get(app).clear();
+        Intent intent = new Intent(app, LoginActivity.class);
         // Xóa toàn bộ các màn trước đó, để bấm Back không quay lại được vào app
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        app.startActivity(intent);
     }
 
     private void toast(String message) {

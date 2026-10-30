@@ -5,6 +5,7 @@ import com.example.celehub.API.ApiErrors;
 import com.example.celehub.Data.SessionManager;
 import com.example.celehub.Model.ApiResponse;
 import com.example.celehub.Model.ForceChangePasswordRequest;
+import com.example.celehub.Model.ResetPasswordRequest;
 import com.example.celehub.R;
 import com.example.celehub.Util.FormErrors;
 import com.example.celehub.Util.PasswordRules;
@@ -35,6 +36,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
     public static final String EXTRA_MODE = "mode";
     public static final String MODE_FIRST_LOGIN = "first_login";
     public static final String MODE_FORGOT = "forgot";
+    public static final String EXTRA_RESET_TOKEN = "reset_token";
 
     private TextInputLayout tilNew, tilConfirm;
     private TextInputEditText etNew, etConfirm;
@@ -84,10 +86,50 @@ public class ResetPasswordActivity extends AppCompatActivity {
         if (firstLogin) {
             submitFirstLogin(newPass);
         } else {
-            // TODO: backend chưa có API quên mật khẩu (/api/auth/forgot-password/...). Khi có thì gọi ở đây.
-            Toast.makeText(this, "Đặt lại mật khẩu thành công", Toast.LENGTH_SHORT).show();
-            goTo(LoginActivity.class);
+            if (firstLogin) {
+                submitFirstLogin(newPass);
+            } else {
+                submitForgot(newPass);
+            }
         }
+    }
+    /** Gọi POST /api/auth/forgot-password/reset rồi về màn đăng nhập. */
+    private void submitForgot(String newPass) {
+        String token = getIntent().getStringExtra(EXTRA_RESET_TOKEN);
+        if (token == null || token.isEmpty()) {
+            Toast.makeText(this, "Phiên đặt lại mật khẩu không hợp lệ, vui lòng thử lại",
+                    Toast.LENGTH_LONG).show();
+            goTo(LoginActivity.class);
+            return;
+        }
+        setLoading(true);
+
+        ApiClient.get(this).forgotReset(new ResetPasswordRequest(token, newPass))
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call,
+                                           Response<ApiResponse<Void>> response) {
+                        if (isFinishing() || isDestroyed()) return;
+                        setLoading(false);
+                        if (response.isSuccessful()) {
+                            Toast.makeText(ResetPasswordActivity.this,
+                                    "Đặt lại mật khẩu thành công", Toast.LENGTH_SHORT).show();
+                            goTo(LoginActivity.class);
+                        } else {
+                            Toast.makeText(ResetPasswordActivity.this,
+                                    ApiErrors.messageOf(response, "Đặt lại mật khẩu thất bại"),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                        if (isFinishing() || isDestroyed()) return;
+                        setLoading(false);
+                        Toast.makeText(ResetPasswordActivity.this, ApiErrors.NETWORK_ERROR,
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     /** Gọi POST /api/auth/force-change-password rồi vào app. */

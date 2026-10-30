@@ -1,20 +1,30 @@
 package com.example.celehub.Activity;
 
+import android.widget.Toast;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import com.example.celehub.API.ApiClient;
+import com.example.celehub.API.ApiErrors;
+import com.example.celehub.Model.ApiResponse;
+import com.example.celehub.Model.VerifyOtpRequest;
+import com.example.celehub.Model.VerifyOtpResponse;
 
 import com.example.celehub.R;
 import com.google.android.material.button.MaterialButton;
 
 public class OtpActivity extends AppCompatActivity {
-
+    private String email;
     private static final int OTP_LENGTH = 6;
     private final EditText[] boxes = new EditText[OTP_LENGTH];
 
@@ -22,6 +32,7 @@ public class OtpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_otp);
+        email = getIntent().getStringExtra("email");
 
         int[] ids = {R.id.otp1, R.id.otp2, R.id.otp3, R.id.otp4, R.id.otp5, R.id.otp6};
         for (int i = 0; i < OTP_LENGTH; i++) {
@@ -71,10 +82,37 @@ public class OtpActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO: gửi code.toString() lên server để xác thực ở đây
+        MaterialButton btnContinue = findViewById(R.id.btnContinue);
+        btnContinue.setEnabled(false);
 
-        // OTP đúng -> sang màn đặt mật khẩu mới
-        startActivity(new Intent(this, ResetPasswordActivity.class));
-        finish();
+        ApiClient.get(this).forgotVerify(new VerifyOtpRequest(email, code.toString()))
+                .enqueue(new Callback<ApiResponse<VerifyOtpResponse>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<VerifyOtpResponse>> call,
+                                           Response<ApiResponse<VerifyOtpResponse>> res) {
+                        if (isFinishing() || isDestroyed()) return;
+                        btnContinue.setEnabled(true);
+                        if (res.isSuccessful() && res.body() != null && res.body().getData() != null) {
+                            Intent intent = new Intent(OtpActivity.this, ResetPasswordActivity.class);
+                            intent.putExtra(ResetPasswordActivity.EXTRA_MODE, ResetPasswordActivity.MODE_FORGOT);
+                            intent.putExtra(ResetPasswordActivity.EXTRA_RESET_TOKEN,
+                                    res.body().getData().getResetToken());
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(OtpActivity.this,
+                                    ApiErrors.messageOf(res, "Mã OTP không đúng hoặc đã hết hạn"),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<VerifyOtpResponse>> call, Throwable t) {
+                        if (isFinishing() || isDestroyed()) return;
+                        btnContinue.setEnabled(true);
+                        Toast.makeText(OtpActivity.this, ApiErrors.NETWORK_ERROR, Toast.LENGTH_LONG).show();
+                    }
+                });
+
     }
 }

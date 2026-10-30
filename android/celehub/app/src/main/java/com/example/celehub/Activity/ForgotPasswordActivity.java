@@ -1,5 +1,6 @@
 package com.example.celehub.Activity;
 
+import android.widget.Toast;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -8,6 +9,14 @@ import android.util.Patterns;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import com.example.celehub.API.ApiClient;
+import com.example.celehub.API.ApiErrors;
+import com.example.celehub.Model.ApiResponse;
+import com.example.celehub.Model.ForgotPasswordRequest;
 import com.example.celehub.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -41,10 +50,35 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 tilEmail.setError("Email không hợp lệ");
                 return;
             }
-            // TODO: gọi API gửi mã OTP về email ở đây
-            Intent intent = new Intent(this, OtpActivity.class);
-            intent.putExtra("email", email);
-            startActivity(intent);
+            requestOtp(email, btnContinue, tilEmail);
         });
+
+    }
+    private void requestOtp(String email, MaterialButton button, TextInputLayout tilEmail) {
+        button.setEnabled(false);
+        ApiClient.get(this).forgotRequest(new ForgotPasswordRequest(email))
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call,
+                                           Response<ApiResponse<Void>> res) {
+                        if (isFinishing() || isDestroyed()) return;
+                        button.setEnabled(true);
+                        if (res.isSuccessful()) {
+                            Intent intent = new Intent(ForgotPasswordActivity.this, OtpActivity.class);
+                            intent.putExtra("email", email);
+                            startActivity(intent);
+                        } else {
+                            tilEmail.setError(ApiErrors.messageOf(res, "Không gửi được mã, vui lòng thử lại"));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                        if (isFinishing() || isDestroyed()) return;
+                        button.setEnabled(true);
+                        Toast.makeText(ForgotPasswordActivity.this, ApiErrors.NETWORK_ERROR,
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }
