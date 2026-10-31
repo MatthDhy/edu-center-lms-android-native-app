@@ -15,12 +15,14 @@ import com.example.celehub.Data.SessionManager;
 public final class ApiClient {
 
     /**
-     * Địa chỉ backend.
-     *  - Máy ảo Android: 10.0.2.2 chính là "localhost" của máy tính đang chạy backend.
-     *  - Điện thoại thật: đổi thành IP LAN của máy tính, ví dụ "http://192.168.1.10:8080/"
-     *    (cùng mạng Wi-Fi) và sửa luôn domain trong res/xml/network_security_config.xml.
+     * Địa chỉ backend:
+     * - Dùng "http://127.0.0.1:8080/" kết hợp lệnh máy tính:
+     *     adb reverse tcp:8080 tcp:8080
+     *   (Khuyên dùng trên Windows khi chạy Docker Desktop/WSL2 để tránh bị Firewall hoặc ảo hóa mạng chặn).
+     * - Nếu dùng AVD không qua adb reverse: "http://10.0.2.2:8080/"
+     * - Nếu dùng điện thoại thật kết nối cùng Wi-Fi: "http://192.168.100.249:8080/"
      */
-    public static final String BASE_URL = "http://10.0.2.2:8080/";
+    public static final String BASE_URL = "http://127.0.0.1:8080/";
 
     private static ApiService service;
 
