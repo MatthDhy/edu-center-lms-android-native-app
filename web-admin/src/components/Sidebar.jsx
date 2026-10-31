@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  LayoutDashboard, GraduationCap, Database, LogOut, BookOpen,
+  LayoutDashboard, GraduationCap, LogOut, BookOpen,
   School, CalendarDays, ClipboardList, Megaphone,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -25,10 +25,6 @@ const GROUPS = [
       { id: 'assignments', label: 'Theo dõi bài tập', icon: ClipboardList },
       { id: 'notifications', label: 'Gửi thông báo', icon: Megaphone },
     ],
-  },
-  {
-    label: 'Hệ thống',
-    items: [{ id: 'architecture', label: 'Cơ chế Nối DB & Role', icon: Database }],
   },
 ];
 

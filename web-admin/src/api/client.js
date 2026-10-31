@@ -69,6 +69,11 @@ export const courseApi = {
   cancelLesson: (lessonId) => apiClient.delete(`/api/admin/lessons/${lessonId}`),
   schedule: (from, to) => apiClient.get('/api/admin/lessons', { params: { from, to } }),
 
+  materials: (courseId) => apiClient.get(`/api/courses/${courseId}/materials`),
+  addMaterial: (courseId, formData) =>
+    apiClient.post(`/api/courses/${courseId}/materials`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  deleteMaterial: (id) => apiClient.delete(`/api/materials/${id}`),
+
   roster: (courseId) => apiClient.get(`/api/admin/courses/${courseId}/enrollments`),
   enroll: (courseId, studentIds) => apiClient.post(`/api/admin/courses/${courseId}/enrollments`, { studentIds }),
   removeStudent: (courseId, studentId) => apiClient.delete(`/api/admin/courses/${courseId}/enrollments/${studentId}`),

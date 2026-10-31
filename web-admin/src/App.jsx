@@ -5,7 +5,6 @@ import Header from './components/Header';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import UserListPage from './pages/UserListPage';
-import ArchitecturePage from './pages/ArchitecturePage';
 import CoursesPage from './pages/CoursesPage';
 import TimetablePage from './pages/TimetablePage';
 import AssignmentsPage from './pages/AssignmentsPage';
@@ -13,100 +12,43 @@ import BroadcastPage from './pages/BroadcastPage';
 import CreateUserModal from './components/CreateUserModal';
 
 const PAGE_META = {
-  dashboard: {
-    title: 'Tổng quan & Thống kê',
-    subtitle: 'Dashboard quản trị toàn hệ thống CeLeHub'
-  },
-  teachers: {
-    title: 'Quản lý Giảng viên',
-    subtitle: 'Cấp tài khoản, khóa/mở khóa, xóa, reset mật khẩu Giảng viên (ROLE_TEACHER)'
-  },
-  students: {
-    title: 'Quản lý Học viên',
-    subtitle: 'Cấp tài khoản, khóa/mở khóa, xóa, reset mật khẩu Học viên (ROLE_STUDENT)'
-  },
-  courses: {
-    title: 'Quản lý Lớp học',
-    subtitle: 'Tạo lớp, gán giảng viên, xếp lịch học và xếp học viên vào lớp'
-  },
-  timetable: {
-    title: 'Thời khóa biểu',
-    subtitle: 'Lưới tuần theo phòng học, cảnh báo trùng giờ giảng viên / phòng'
-  },
-  assignments: {
-    title: 'Theo dõi bài tập',
-    subtitle: 'Xem tiến độ nộp bài và điểm của từng lớp (giảng viên giao/chấm trên app)'
-  },
-  notifications: {
-    title: 'Gửi thông báo chung',
-    subtitle: 'Thông báo tới tất cả, học viên, giảng viên hoặc một lớp học'
-  },
-  architecture: {
-    title: 'Cơ chế Nối DB & Phân quyền',
-    subtitle: 'Tài liệu kỹ thuật: JWT, CORS, Role-based Access Control'
-  },
+  dashboard: { title: 'Tổng quan', subtitle: 'Số liệu nhanh của trung tâm' },
+  teachers: { title: 'Giảng viên', subtitle: 'Cấp tài khoản, khóa/mở khóa, cấp lại mật khẩu' },
+  students: { title: 'Học viên', subtitle: 'Cấp tài khoản, khóa/mở khóa, cấp lại mật khẩu' },
+  courses: { title: 'Lớp học', subtitle: 'Tạo lớp, gán giảng viên, xếp lịch, xếp học viên, tài liệu' },
+  timetable: { title: 'Thời khóa biểu', subtitle: 'Lưới tuần theo phòng, cảnh báo trùng giờ' },
+  assignments: { title: 'Theo dõi bài tập', subtitle: 'Tiến độ nộp bài của từng lớp' },
+  notifications: { title: 'Gửi thông báo', subtitle: 'Tới tất cả, học viên, giảng viên hoặc một lớp' },
 };
 
 export default function App() {
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [createModalRole, setCreateModalRole] = useState('STUDENT');
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createRole, setCreateRole] = useState('STUDENT');
 
-  if (!isAuthenticated) {
-    return <LoginPage />;
-  }
+  if (!isAuthenticated) return <LoginPage />;
 
-  const handleOpenCreateModal = (role) => {
-    setCreateModalRole(role);
-    setCreateModalOpen(true);
-  };
-
+  const openCreate = (role) => { setCreateRole(role); setCreateOpen(true); };
   const meta = PAGE_META[activeTab] || PAGE_META.dashboard;
 
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <Header title={meta.title} subtitle={meta.subtitle} />
-
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-          {activeTab === 'dashboard' && (
-            <DashboardPage
-              onNavigate={setActiveTab}
-              onOpenCreateModal={handleOpenCreateModal}
-            />
-          )}
-          {activeTab === 'teachers' && (
-            <UserListPage
-              role="TEACHER"
-              title="Danh sách Giảng viên"
-              subtitle="Quản lý tất cả tài khoản có vai trò TEACHER — Sử dụng app Android phiên bản Giảng viên"
-            />
-          )}
-          {activeTab === 'students' && (
-            <UserListPage
-              role="STUDENT"
-              title="Danh sách Học viên"
-              subtitle="Quản lý tất cả tài khoản có vai trò STUDENT — Sử dụng app Android phiên bản Học viên"
-            />
-          )}
+          {activeTab === 'dashboard' && <DashboardPage onNavigate={setActiveTab} onOpenCreateModal={openCreate} />}
+          {activeTab === 'teachers' && <UserListPage role="TEACHER" title="Danh sách giảng viên" subtitle="Tài khoản dùng app Android bản giảng viên" />}
+          {activeTab === 'students' && <UserListPage role="STUDENT" title="Danh sách học viên" subtitle="Tài khoản dùng app Android bản học viên" />}
           {activeTab === 'courses' && <CoursesPage />}
           {activeTab === 'timetable' && <TimetablePage />}
           {activeTab === 'assignments' && <AssignmentsPage />}
           {activeTab === 'notifications' && <BroadcastPage />}
-          {activeTab === 'architecture' && <ArchitecturePage />}
         </main>
       </div>
-
-      {/* Global Create Modal (opened from Dashboard) */}
-      <CreateUserModal
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        defaultRole={createModalRole}
-        onSuccess={() => setCreateModalOpen(false)}
-      />
+      <CreateUserModal isOpen={createOpen} onClose={() => setCreateOpen(false)}
+        defaultRole={createRole} onSuccess={() => setCreateOpen(false)} />
     </div>
   );
 }

@@ -38,7 +38,6 @@ export default function LoginPage() {
         <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/80 rounded-3xl p-8 shadow-2xl">
           <div className="mb-6 flex items-center gap-2 p-3 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-300 text-xs">
             <ShieldCheck className="w-4 h-4 shrink-0 text-brand-400" />
-            <span>Khu vực bảo mật dành riêng cho Quản trị viên (ROLE_ADMIN).</span>
           </div>
 
           {error && (
@@ -96,15 +95,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Helper hint */}
-          <div className="mt-6 pt-5 border-t border-slate-700/60 text-center">
-            <p className="text-xs text-slate-400">
-              Tài khoản mặc định: <span className="text-brand-300 font-mono">admin@celehub.edu.vn</span>
-            </p>
-            <p className="text-xs text-slate-400 mt-1">
-              Mật khẩu: <span className="text-brand-300 font-mono">Admin@123456</span>
-            </p>
-          </div>
         </div>
       </div>
     </div>

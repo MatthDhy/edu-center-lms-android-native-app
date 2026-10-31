@@ -101,5 +101,29 @@ Content-Type: multipart/form-data; boundary=X
 --X
 Content-Disposition: form-data; name="title"
 
+### 13. Thêm tài liệu (GV của lớp hoặc Admin)
+POST {{host}}/api/courses/1/materials
+Authorization: Bearer {{teacherToken}}
+Content-Type: multipart/form-data; boundary=X
+
+--X
+Content-Disposition: form-data; name="title"
+
+Slide buổi 1
+--X
+Content-Disposition: form-data; name="file"; filename="slide1.pdf"
+Content-Type: application/pdf
+
+< ./slide1.pdf
+--X--
+
+### 14. HV xem tài liệu
+GET {{host}}/api/courses/1/materials
+Authorization: Bearer {{studentToken}}
+
+### 15. Xóa tài liệu
+DELETE {{host}}/api/materials/1
+Authorization: Bearer {{teacherToken}}
+
 x
 --X--

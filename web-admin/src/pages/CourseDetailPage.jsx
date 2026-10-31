@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   ArrowLeft, Pencil, Trash2, Plus, Repeat, UserPlus, UserMinus, Eye, RefreshCw,
-  Info, CalendarDays, Users, ClipboardList,
+  Info, CalendarDays, Users, ClipboardList, FileText, ExternalLink
 } from 'lucide-react';
 import { courseApi, adminApi } from '../api/client';
 import LessonFormModal from '../components/LessonFormModal';
@@ -12,12 +12,14 @@ import CourseFormModal from '../components/CourseFormModal';
 import ConfirmModal from '../components/ConfirmModal';
 import { WEEKDAYS, fmtDate, fmtDateTime, fmtMoney, fmtTime } from '../utils/format';
 import { btnPrimary } from '../components/ui';
+import MaterialFormModal from '../components/MaterialFormModal';
 
 const TABS = [
   { id: 'info', label: 'Tổng quan', icon: Info },
   { id: 'lessons', label: 'Buổi học', icon: CalendarDays },
   { id: 'students', label: 'Học viên', icon: Users },
   { id: 'assignments', label: 'Bài tập', icon: ClipboardList },
+  { id: 'materials', label: 'Tài liệu', icon: FileText },
 ];
 
 const LESSON_STYLE = {
@@ -38,6 +40,9 @@ export default function CourseDetailPage({ courseId, teachers, onBack }) {
   const [lessons, setLessons] = useState([]);
   const [roster, setRoster] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [materials, setMaterials] = useState([]);
+  const [materialFormOpen, setMaterialFormOpen] = useState(false);
+  const [deleteMaterial, setDeleteMaterial] = useState(null);
   const [tabLoading, setTabLoading] = useState(false);
 
   const [courseFormOpen, setCourseFormOpen] = useState(false);
@@ -72,6 +77,7 @@ export default function CourseDetailPage({ courseId, teachers, onBack }) {
       if (tab === 'lessons') setLessons((await courseApi.lessons(courseId)).data || []);
       if (tab === 'students') setRoster((await courseApi.roster(courseId)).data || []);
       if (tab === 'assignments') setAssignments((await courseApi.assignments(courseId)).data || []);
+      if (tab === 'materials') setMaterials((await courseApi.materials(courseId)).data || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -110,6 +116,16 @@ export default function CourseDetailPage({ courseId, teachers, onBack }) {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const doDeleteMaterial = async () => {
+    setActionLoading(true); setActionError('');
+    try {
+      await courseApi.deleteMaterial(deleteMaterial.id);
+      setDeleteMaterial(null);
+      refreshAll();
+    } catch (err) { setActionError(err.message); }
+    finally { setActionLoading(false); }
   };
 
   if (!course) {
@@ -328,12 +344,55 @@ export default function CourseDetailPage({ courseId, teachers, onBack }) {
         </div>
       )}
 
+      {tab === 'materials' && (
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button onClick={() => setMaterialFormOpen(true)} className={btnPrimary}><Plus className="w-4 h-4" /> Thêm tài liệu</button>
+          </div>
+          {materials.length === 0 ? (
+            <div className="bg-white rounded-xl border border-slate-200"><Empty text="Lớp chưa có tài liệu." /></div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                    <th className="px-5 py-3">Tài liệu</th>
+                    <th className="px-5 py-3">Người đăng</th>
+                    <th className="px-5 py-3">Ngày đăng</th>
+                    <th className="px-5 py-3 text-right">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {materials.map((m) => (
+                    <tr key={m.id}>
+                      <td className="px-5 py-3">
+                        <p className="font-semibold text-slate-800">{m.title}</p>
+                        {m.description && <p className="text-xs text-slate-500">{m.description}</p>}
+                      </td>
+                      <td className="px-5 py-3 text-xs text-slate-600">{m.uploadedByName || '—'}</td>
+                      <td className="px-5 py-3 text-xs text-slate-500">{fmtDateTime(m.createdAt)}</td>
+                      <td className="px-5 py-3">
+                        <div className="flex justify-end gap-2">
+                          <a href={m.fileUrl} target="_blank" rel="noreferrer" title="Mở file" className="p-2 rounded-lg text-brand-600 hover:bg-brand-50 border border-brand-100"><ExternalLink className="w-4 h-4" /></a>
+                          <button onClick={() => { setActionError(''); setDeleteMaterial(m); }} title="Xóa" className="p-2 rounded-lg text-rose-600 hover:bg-rose-50 border border-rose-200"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ===== Modals ===== */}
       <CourseFormModal isOpen={courseFormOpen} onClose={() => setCourseFormOpen(false)} course={course} teachers={teacherList} onSaved={refreshAll} />
       <LessonFormModal isOpen={lessonForm.open} onClose={() => setLessonForm({ open: false, lesson: null })} courseId={courseId} lesson={lessonForm.lesson} onSaved={refreshAll} />
       <GenerateLessonsModal isOpen={genOpen} onClose={() => setGenOpen(false)} courseId={courseId} defaultSessions={course.totalSessions} onSaved={refreshAll} />
       <EnrollStudentsModal isOpen={enrollOpen} onClose={() => setEnrollOpen(false)} courseId={courseId} enrolledIds={roster.map((s) => s.studentId)} onSaved={refreshAll} />
       <SubmissionsModal isOpen={!!submissionsFor} assignmentId={submissionsFor} onClose={() => setSubmissionsFor(null)} />
+      <MaterialFormModal isOpen={materialFormOpen} onClose={() => setMaterialFormOpen(false)} courseId={courseId} onSaved={refreshAll} />
       <ConfirmModal
         isOpen={!!cancelTarget}
         title="Hủy buổi học"
@@ -355,6 +414,12 @@ export default function CourseDetailPage({ courseId, teachers, onBack }) {
         onClose={() => setRemoveTarget(null)}
         onConfirm={doRemoveStudent}
         message={removeTarget && <>Rút <strong>{removeTarget.fullName}</strong> khỏi lớp <strong>{course.courseName}</strong>? Lịch sử bài nộp và điểm danh vẫn được giữ.</>}
+      />
+      <ConfirmModal
+        isOpen={!!deleteMaterial} title="Xóa tài liệu" danger confirmText="Xóa"
+        loading={actionLoading} error={actionError}
+        onClose={() => setDeleteMaterial(null)} onConfirm={doDeleteMaterial}
+        message={deleteMaterial && <>Xóa tài liệu <strong>{deleteMaterial.title}</strong>? File sẽ bị xóa khỏi kho lưu trữ.</>}
       />
     </div>
   );
