@@ -12,13 +12,13 @@ import BroadcastPage from './pages/BroadcastPage';
 import CreateUserModal from './components/CreateUserModal';
 
 const PAGE_META = {
-  dashboard: { title: 'Tổng quan', subtitle: 'Số liệu nhanh của trung tâm' },
-  teachers: { title: 'Giảng viên', subtitle: 'Cấp tài khoản, khóa/mở khóa, cấp lại mật khẩu' },
-  students: { title: 'Học viên', subtitle: 'Cấp tài khoản, khóa/mở khóa, cấp lại mật khẩu' },
-  courses: { title: 'Lớp học', subtitle: 'Tạo lớp, gán giảng viên, xếp lịch, xếp học viên, tài liệu' },
-  timetable: { title: 'Thời khóa biểu', subtitle: 'Lưới tuần theo phòng, cảnh báo trùng giờ' },
-  assignments: { title: 'Theo dõi bài tập', subtitle: 'Tiến độ nộp bài của từng lớp' },
-  notifications: { title: 'Gửi thông báo', subtitle: 'Tới tất cả, học viên, giảng viên hoặc một lớp' },
+  dashboard: { title: 'Tổng quan hệ thống', crumb: 'Tổng quan', subtitle: 'Theo dõi hoạt động dạy và học trên CeLeHub.' },
+  teachers: { title: 'Quản lý giảng viên', crumb: 'Quản lý giảng viên', subtitle: 'Cấp tài khoản, khóa/mở khóa, cấp lại mật khẩu.' },
+  students: { title: 'Quản lý học viên', crumb: 'Quản lý học viên', subtitle: 'Cấp tài khoản, khóa/mở khóa, cấp lại mật khẩu.' },
+  courses: { title: 'Quản lý lớp học', crumb: 'Quản lý lớp học', subtitle: 'Tạo lớp, gán giảng viên, xếp lịch, xếp học viên, tài liệu.' },
+  timetable: { title: 'Thời khóa biểu', crumb: 'Thời khóa biểu', subtitle: 'Lưới tuần theo phòng, cảnh báo trùng giờ.' },
+  assignments: { title: 'Theo dõi bài tập', crumb: 'Theo dõi bài tập', subtitle: 'Tiến độ nộp bài của từng lớp.' },
+  notifications: { title: 'Gửi thông báo', crumb: 'Gửi thông báo', subtitle: 'Tới tất cả, học viên, giảng viên hoặc một lớp.' },
 };
 
 export default function App() {
@@ -33,11 +33,15 @@ export default function App() {
   const meta = PAGE_META[activeTab] || PAGE_META.dashboard;
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-[#F5F5FB]">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <Header title={meta.title} subtitle={meta.subtitle} />
+      <div className="flex-1 flex flex-col min-h-screen min-w-0">
+        <Header title={meta.crumb} />
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+          <div className="mb-6">
+            <h1 className="text-3xl font-extrabold tracking-tight text-ink">{meta.title}</h1>
+            <p className="text-sm text-slate-500 mt-1">{meta.subtitle}</p>
+          </div>
           {activeTab === 'dashboard' && <DashboardPage onNavigate={setActiveTab} onOpenCreateModal={openCreate} />}
           {activeTab === 'teachers' && <UserListPage role="TEACHER" title="Danh sách giảng viên" subtitle="Tài khoản dùng app Android bản giảng viên" />}
           {activeTab === 'students' && <UserListPage role="STUDENT" title="Danh sách học viên" subtitle="Tài khoản dùng app Android bản học viên" />}

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Megaphone, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, Users, GraduationCap, BookOpen, School } from 'lucide-react';
 import { courseApi, notificationApi } from '../api/client';
 import ConfirmModal from '../components/ConfirmModal';
-import { inputCls, labelCls } from '../components/ui';
+import { inputCls, labelCls, cardCls, btnPrimary } from '../components/ui';
 
 const TARGETS = [
-  { id: 'ALL', label: 'Tất cả', hint: 'Mọi học viên và giảng viên đang hoạt động' },
-  { id: 'STUDENTS', label: 'Học viên', hint: 'Chỉ học viên đang hoạt động' },
-  { id: 'TEACHERS', label: 'Giảng viên', hint: 'Chỉ giảng viên đang hoạt động' },
-  { id: 'COURSE', label: 'Một lớp học', hint: 'Học viên đang học + giảng viên của lớp' },
+  { id: 'ALL', label: 'Tất cả', hint: 'Mọi học viên và giảng viên đang hoạt động', icon: Users },
+  { id: 'STUDENTS', label: 'Học viên', hint: 'Chỉ học viên đang hoạt động', icon: GraduationCap },
+  { id: 'TEACHERS', label: 'Giảng viên', hint: 'Chỉ giảng viên đang hoạt động', icon: BookOpen },
+  { id: 'COURSE', label: 'Một lớp học', hint: 'Học viên đang học + giảng viên của lớp', icon: School },
 ];
 
 export default function BroadcastPage() {
@@ -26,7 +26,7 @@ export default function BroadcastPage() {
     courseApi.list({ status: 'ACTIVE' }).then((r) => setCourses(r.data || [])).catch(() => {});
   }, []);
 
-  const targetInfo = TARGETS.find((t) => t.id === target);
+  const info = TARGETS.find((t) => t.id === target);
   const canSend = title.trim() && (target !== 'COURSE' || courseId);
 
   const send = async () => {
@@ -34,9 +34,7 @@ export default function BroadcastPage() {
     setError('');
     try {
       const res = await notificationApi.broadcast({
-        title: title.trim(),
-        content: content.trim() || undefined,
-        target,
+        title: title.trim(), content: content.trim() || undefined, target,
         courseId: target === 'COURSE' ? Number(courseId) : undefined,
       });
       setResult(res.data.recipients);
@@ -51,42 +49,30 @@ export default function BroadcastPage() {
   };
 
   return (
-    <div className="max-w-2xl space-y-5">
-      <div>
-        <h3 className="text-lg font-bold text-slate-800">Gửi thông báo chung</h3>
-        <p className="text-xs text-slate-500 mt-0.5">Thông báo hiện ở chuông trên app Android của người nhận.</p>
-      </div>
-
+    <div className="max-w-3xl space-y-5">
       {result != null && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-3 text-sm text-emerald-800">
-          <CheckCircle className="w-5 h-5 shrink-0" />
-          Đã gửi thông báo cho <strong>{result}</strong> người.
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3 text-emerald-800">
+          <CheckCircle className="w-6 h-6 shrink-0" />
+          <span className="text-sm">Đã gửi thông báo cho <b className="text-2xl font-extrabold mx-1">{result}</b> người.</span>
         </div>
       )}
-      {error && (
-        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-sm text-rose-700">
-          <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
-        </div>
+      {error && !confirm && (
+        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-sm text-rose-700"><AlertCircle className="w-4 h-4 shrink-0" />{error}</div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
+      <div className={`${cardCls} p-6 space-y-6`}>
         <div>
           <label className={labelCls}>Gửi đến</label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {TARGETS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => { setTarget(t.id); setResult(null); }}
-                className={`py-2.5 px-3 rounded-xl border text-sm font-semibold transition-all ${
-                  target === t.id ? 'bg-brand-50 border-brand-500 text-brand-700 ring-2 ring-brand-500/20' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                {t.label}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {TARGETS.map(({ id, label, icon: Icon }) => (
+              <button key={id} type="button" onClick={() => { setTarget(id); setResult(null); }}
+                className={`flex flex-col items-center gap-2 py-4 rounded-2xl border-2 text-sm font-bold transition-all ${
+                  target === id ? 'bg-brand-50 border-brand-500 text-brand-700' : 'border-slate-200 text-slate-600 hover:border-brand-200 hover:bg-slate-50'}`}>
+                <Icon className="w-6 h-6" />{label}
               </button>
             ))}
           </div>
-          <p className="text-xs text-slate-400 mt-2">{targetInfo.hint}</p>
+          <p className="text-xs text-slate-500 mt-2.5">{info.hint}</p>
         </div>
 
         {target === 'COURSE' && (
@@ -101,35 +87,24 @@ export default function BroadcastPage() {
 
         <div>
           <label className={labelCls}>Tiêu đề *</label>
-          <input className={inputCls} maxLength={200} placeholder="Ví dụ: Nghỉ lễ Quốc khánh" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input className={`${inputCls} text-base font-semibold`} maxLength={200} placeholder="Ví dụ: Nghỉ lễ Quốc khánh" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div>
           <label className={labelCls}>Nội dung</label>
-          <textarea rows={4} maxLength={2000} className={inputCls} value={content} onChange={(e) => setContent(e.target.value)} />
+          <textarea rows={5} maxLength={2000} className={inputCls} value={content} onChange={(e) => setContent(e.target.value)} />
+          <p className="text-right text-xs text-slate-400 mt-1 tabular-nums">{content.length}/2000</p>
         </div>
 
         <div className="flex justify-end">
-          <button
-            type="button"
-            disabled={!canSend}
-            onClick={() => { setError(''); setConfirm(true); }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm shadow-md shadow-brand-500/20 disabled:opacity-50 transition-all"
-          >
+          <button type="button" disabled={!canSend} onClick={() => { setError(''); setConfirm(true); }} className={btnPrimary}>
             <Send className="w-4 h-4" /> Gửi thông báo
           </button>
         </div>
       </div>
 
-      <ConfirmModal
-        isOpen={confirm}
-        title="Xác nhận gửi thông báo"
-        confirmText="Gửi ngay"
-        loading={sending}
-        error={error}
-        onClose={() => setConfirm(false)}
-        onConfirm={send}
-        message={<>Gửi “<strong>{title}</strong>” đến <strong>{targetInfo.label.toLowerCase()}</strong>? Thông báo đã gửi không thể thu hồi.</>}
-      />
+      <ConfirmModal isOpen={confirm} title="Xác nhận gửi thông báo" confirmText="Gửi ngay" loading={sending} error={error}
+        onClose={() => setConfirm(false)} onConfirm={send}
+        message={<>Gửi “<strong>{title}</strong>” đến <strong>{info.label.toLowerCase()}</strong>? Thông báo đã gửi không thể thu hồi.</>} />
     </div>
   );
 }
