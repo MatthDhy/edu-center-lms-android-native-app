@@ -14,4 +14,5 @@ public record HomeTeacherResponse(
         long pendingLeaveCount,                      // đơn xin nghỉ chờ duyệt
         long lessonsThisMonth,                       // số buổi đã dạy trong tháng
         List<SubmissionSummaryDto> recentSubmissions,// 5 bài nộp chưa chấm mới nhất
+        List<TaskDto> upcomingTasks,                 // "Bài tập đã giao": tối đa 5 bài còn hạn, hạn gần nhất lên đầu
         List<NotificationDto> recentNotifications) {}

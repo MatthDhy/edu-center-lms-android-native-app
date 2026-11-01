@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
-    /** Bài tập còn hạn mà học viên CHƯA nộp, hạn gần nhất lên đầu. (dùng cho Home) */
+    /** Bài tập còn hạn mà học viên CHƯA nộp, hạn gần nhất lên đầu. (dùng cho Home học viên) */
     @Query("""
             SELECT a FROM Assignment a JOIN FETCH a.course c
             WHERE a.deadline IS NOT NULL AND a.deadline > :now
@@ -19,6 +19,14 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
               AND NOT EXISTS (SELECT s.id FROM Submission s WHERE s.assignment.id = a.id AND s.student.id = :studentId)
             ORDER BY a.deadline ASC""")
     List<Assignment> findOpenForStudent(@Param("studentId") Long studentId, @Param("now") LocalDateTime now,
+                                        Pageable pageable);
+
+    /** Bài tập giảng viên đã giao mà vẫn còn hạn nộp, hạn gần nhất lên đầu. (dùng cho Home giảng viên) */
+    @Query("""
+            SELECT a FROM Assignment a JOIN FETCH a.course c
+            WHERE c.teacher.id = :teacherId AND a.deadline IS NOT NULL AND a.deadline > :now
+            ORDER BY a.deadline ASC""")
+    List<Assignment> findOpenForTeacher(@Param("teacherId") Long teacherId, @Param("now") LocalDateTime now,
                                         Pageable pageable);
 
     @Query("""

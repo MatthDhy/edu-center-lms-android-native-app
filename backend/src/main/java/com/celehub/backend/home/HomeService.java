@@ -113,6 +113,12 @@ public class HomeService {
                         s.getSubmittedAt(), s.isLate()))
                 .toList();
 
+        // "Bài tập đã giao": các bài của giảng viên còn hạn nộp, hạn gần nhất lên đầu (cùng khuôn TaskDto với học viên)
+        List<TaskDto> assigned = assignmentRepository
+                .findOpenForTeacher(userId, now, PageRequest.of(0, MAX_TASKS)).stream()
+                .map(a -> toTask(a.getId(), "ESSAY", a.getTitle(), a.getCourse().getCourseName(), a.getDeadline(), now))
+                .toList();
+
         return new HomeTeacherResponse(
                 UserDto.from(u),
                 notificationService.unreadCount(userId),
@@ -122,6 +128,7 @@ public class HomeService {
                 leaveRequestRepository.countPendingForTeacher(userId),
                 lessonRepository.countTaughtByTeacher(userId, today.withDayOfMonth(1).atStartOfDay(), now),
                 recent,
+                assigned,
                 notificationService.recent(userId, RECENT_NOTIFICATIONS));
     }
 
