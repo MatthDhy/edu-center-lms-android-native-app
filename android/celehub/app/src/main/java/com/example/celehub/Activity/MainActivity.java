@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.celehub.Fragment.CoursesFragment;
 import com.example.celehub.Fragment.HomeFragment;
 import com.example.celehub.Fragment.PlaceholderFragment;
 import com.example.celehub.Fragment.ProfileFragment;
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         if (menuId == R.id.nav_home) {
             return new HomeFragment();
         } else if (menuId == R.id.nav_courses) {
-            return PlaceholderFragment.newInstance("Khóa học");
+        return new CoursesFragment();
         } else if (menuId == R.id.nav_assignments) {
             return PlaceholderFragment.newInstance("Bài tập");
         } else if (menuId == R.id.nav_notifications) {

@@ -5,20 +5,26 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PATCH;
+import retrofit2.http.Path;
 
 import com.example.celehub.Model.ApiResponse;
 import com.example.celehub.Model.AuthResponse;
+import com.example.celehub.Model.CourseItem;
 import com.example.celehub.Model.HomeStudentResponse;
 import com.example.celehub.Model.HomeTeacherResponse;
 import com.example.celehub.Model.LoginRequest;
 import com.example.celehub.Model.ForceChangePasswordRequest;
 import com.example.celehub.Model.ChangePasswordRequest;
+import com.example.celehub.Model.MaterialItem;
+import com.example.celehub.Model.StudentItem;
 import com.example.celehub.Model.UserDto;
 import com.example.celehub.Model.ForgotPasswordRequest;
 import com.example.celehub.Model.VerifyOtpRequest;
 import com.example.celehub.Model.VerifyOtpResponse;
 import com.example.celehub.Model.ResetPasswordRequest;
 import com.example.celehub.Model.UpdateProfileRequest;
+
+import java.util.List;
 
 /** Danh sách các API của backend mà app gọi. Mỗi hàm = một endpoint. */
 public interface ApiService {
@@ -54,4 +60,16 @@ public interface ApiService {
 
     @PATCH("api/users/me")
     Call<ApiResponse<UserDto>> updateProfile(@Body UpdateProfileRequest request);
+    /** Học viên: lớp đang học. Giảng viên: lớp đang phụ trách. */
+    @GET("api/courses/mine")
+    Call<ApiResponse<List<CourseItem>>> getMyCourses();
+    @GET("api/courses/{id}")
+    Call<ApiResponse<CourseItem>> getCourse(@Path("id") long id);
+
+    @GET("api/courses/{id}/materials")
+    Call<ApiResponse<List<MaterialItem>>> getMaterials(@Path("id") long courseId);
+
+    /** Chỉ giảng viên (và admin). */
+    @GET("api/courses/{id}/students")
+    Call<ApiResponse<List<StudentItem>>> getCourseStudents(@Path("id") long courseId);
 }

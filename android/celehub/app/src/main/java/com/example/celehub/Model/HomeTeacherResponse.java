@@ -19,4 +19,6 @@ public class HomeTeacherResponse {
     public long getUnreadNotifications() { return unreadNotifications; }
     public LessonSummary getNextLesson() { return nextLesson; }
     public List<TaskItem> getUpcomingTasks() { return upcomingTasks; }
+    private long pendingGradingCount;
+    public long getPendingGradingCount() { return pendingGradingCount; }
 }

@@ -92,4 +92,9 @@ public final class HomeFormat {
         if (minutes < 7 * 24 * 60) return (minutes / (24 * 60)) + " ngày trước";
         return fmt(d, "dd/MM/yyyy");
     }
+    /** "2026-11-01T09:30:00" -> "01/11/2026" */
+    public static String date(String iso) {
+        Date d = parse(iso);
+        return d == null ? "" : fmt(d, "dd/MM/yyyy");
+    }
 }
