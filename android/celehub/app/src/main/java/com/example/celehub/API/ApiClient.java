@@ -22,7 +22,7 @@ public final class ApiClient {
      * - Nếu dùng AVD không qua adb reverse: "http://10.0.2.2:8080/"
      * - Nếu dùng điện thoại thật kết nối cùng Wi-Fi: "http://192.168.100.249:8080/"
      */
-    public static final String BASE_URL = "http://127.0.0.1:8080/";
+    public static final String BASE_URL = "http://129.221.134.7:8080/";
 
     private static ApiService service;
 
