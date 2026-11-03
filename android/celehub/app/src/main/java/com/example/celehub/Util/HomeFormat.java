@@ -97,4 +97,19 @@ public final class HomeFormat {
         Date d = parse(iso);
         return d == null ? "" : fmt(d, "dd/MM/yyyy");
     }
+    /** "2026-10-15T23:59:00" -> "15/10/2026, 23:59" */
+    public static String dateTime(String iso) {
+        Date d = parse(iso);
+        return d == null ? "" : fmt(d, "dd/MM/yyyy, HH:mm");
+    }
+
+    /** "Hôm nay, 7/10/2026" */
+    public static String todayLabel() {
+        return "Hôm nay, " + fmt(new Date(), "d/M/yyyy");
+    }
+
+    /** 8.5 -> "8.5", 10.0 -> "10" */
+    public static String score(double v) {
+        return v == Math.rint(v) ? String.valueOf((long) v) : String.valueOf(v);
+    }
 }

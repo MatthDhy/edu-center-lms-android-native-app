@@ -1,13 +1,17 @@
 package com.example.celehub.API;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PATCH;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 
 import com.example.celehub.Model.ApiResponse;
+import com.example.celehub.Model.AssignmentItem;
 import com.example.celehub.Model.AuthResponse;
 import com.example.celehub.Model.CourseItem;
 import com.example.celehub.Model.HomeStudentResponse;
@@ -17,6 +21,7 @@ import com.example.celehub.Model.ForceChangePasswordRequest;
 import com.example.celehub.Model.ChangePasswordRequest;
 import com.example.celehub.Model.MaterialItem;
 import com.example.celehub.Model.StudentItem;
+import com.example.celehub.Model.SubmissionItem;
 import com.example.celehub.Model.UserDto;
 import com.example.celehub.Model.ForgotPasswordRequest;
 import com.example.celehub.Model.VerifyOtpRequest;
@@ -72,4 +77,16 @@ public interface ApiService {
     /** Chỉ giảng viên (và admin). */
     @GET("api/courses/{id}/students")
     Call<ApiResponse<List<StudentItem>>> getCourseStudents(@Path("id") long courseId);
+    /** Học viên: bài tập của mọi lớp đang học, kèm trạng thái. */
+    @GET("api/assignments/mine")
+    Call<ApiResponse<List<AssignmentItem>>> getMyAssignments();
+
+    @GET("api/assignments/{id}")
+    Call<ApiResponse<AssignmentItem>> getAssignment(@Path("id") long id);
+
+    /** Nộp lần đầu hoặc nộp lại (khi chưa được chấm). Chỉ nhận một phần "file". */
+    @Multipart
+    @POST("api/assignments/{id}/submit")
+    Call<ApiResponse<SubmissionItem>> submitAssignment(@Path("id") long id,
+                                                       @Part MultipartBody.Part file);
 }
