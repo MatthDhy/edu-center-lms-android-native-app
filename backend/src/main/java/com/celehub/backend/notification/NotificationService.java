@@ -41,12 +41,18 @@ public class NotificationService {
         this.enrollmentRepository = enrollmentRepository;
     }
 
+    /** type = null: cả 2 loại. */
     @Transactional(readOnly = true)
-    public PageResponse<NotificationDto> list(Long userId, int page, int size, boolean unreadOnly) {
+    public PageResponse<NotificationDto> list(Long userId, int page, int size, boolean unreadOnly, NotificationType type) {
         PageRequest pr = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50), NEWEST_FIRST);
-        Page<Notification> result = unreadOnly
-                ? notificationRepository.findByUserIdAndReadFalse(userId, pr)
-                : notificationRepository.findByUserId(userId, pr);
+        Page<Notification> result;
+        if (type == null) {
+            result = unreadOnly ? notificationRepository.findByUserIdAndReadFalse(userId, pr)
+                    : notificationRepository.findByUserId(userId, pr);
+        } else {
+            result = unreadOnly ? notificationRepository.findByUserIdAndTypeAndReadFalse(userId, type, pr)
+                    : notificationRepository.findByUserIdAndType(userId, type, pr);
+        }
         return PageResponse.from(result, NotificationDto::from);
     }
 
@@ -61,14 +67,28 @@ public class NotificationService {
         return notificationRepository.countByUserIdAndReadFalse(userId);
     }
 
+    /** { general, class, total, count } — count = total (giữ tương thích bản cũ). */
+    @Transactional(readOnly = true)
+    public Map<String, Long> unreadCounts(Long userId) {
+        long general = 0;
+        long cls = 0;
+        for (Object[] r : notificationRepository.countUnreadByType(userId)) {
+            long n = ((Number) r[1]).longValue();
+            if (r[0] == NotificationType.GENERAL) general = n; else cls = n;
+        }
+        long total = general + cls;
+        return Map.of("general", general, "class", cls, "total", total, "count", total);
+    }
+
     @Transactional
     public void markRead(Long userId, Long notificationId) {
         own(userId, notificationId).markRead();
     }
 
     @Transactional
-    public int markAllRead(Long userId) {
-        return notificationRepository.markAllRead(userId);
+    public int markAllRead(Long userId, NotificationType type) {
+        return type == null ? notificationRepository.markAllRead(userId)
+                : notificationRepository.markAllReadByType(userId, type);
     }
 
     @Transactional
@@ -76,25 +96,39 @@ public class NotificationService {
         notificationRepository.delete(own(userId, notificationId));
     }
 
-    /** Các nghiệp vụ gọi hàm này khi cần báo 1 người. */
+    // ---------- tạo thông báo loại CLASS (từ nghiệp vụ) ----------
+
     @Transactional
     public void create(Long userId, String title, String content) {
-        notificationRepository.save(new Notification(userRepository.getReferenceById(userId), cut(title, 200), content));
+        create(userId, title, content, null, null, null);
     }
 
-    /** Báo nhiều người cùng lúc (giao bài, nhắc nộp, đổi lịch...). Danh sách rỗng thì bỏ qua. */
+    @Transactional
+    public void create(Long userId, String title, String content, Long courseId, String refType, Long refId) {
+        notificationRepository.save(new Notification(userRepository.getReferenceById(userId), cut(title, 200), content,
+                NotificationType.CLASS, courseId, null, refType, refId));
+    }
+
     @Transactional
     public void createForUsers(Collection<Long> userIds, String title, String content) {
-        if (userIds == null || userIds.isEmpty()) return;
-        String t = cut(title, 200);
-        List<Notification> batch = userIds.stream().distinct()
-                .map(id -> new Notification(userRepository.getReferenceById(id), t, content)).toList();
-        notificationRepository.saveAll(batch);
+        createForUsers(userIds, title, content, null, null, null);
     }
 
-    /** Admin gửi thông báo chung. Trả về số người nhận. */
+    @Transactional
+    public void createForUsers(Collection<Long> userIds, String title, String content,
+                               Long courseId, String refType, Long refId) {
+        saveBatch(userIds, title, content, NotificationType.CLASS, courseId, null, refType, refId);
+    }
+
+    // ---------- admin broadcast: loại GENERAL, có thể kèm 1 ảnh ----------
+
     @Transactional
     public int broadcast(BroadcastRequest req) {
+        return broadcast(req, null);
+    }
+
+    @Transactional
+    public int broadcast(BroadcastRequest req, String imageUrl) {
         Set<Long> ids = new LinkedHashSet<>();
         switch (req.target()) {
             case ALL -> ids.addAll(userRepository.findIdsByRolesAndStatus(
@@ -111,13 +145,24 @@ public class NotificationService {
                 ids.add(c.getTeacher().getId());
             }
         }
-        createForUsers(ids, req.title(), req.content());
+        Long courseId = req.target() == BroadcastRequest.Target.COURSE ? req.courseId() : null;
+        saveBatch(ids, req.title(), req.content(), NotificationType.GENERAL, courseId, imageUrl, null, null);
         return ids.size();
+    }
+
+    private void saveBatch(Collection<Long> userIds, String title, String content, NotificationType type,
+                           Long courseId, String imageUrl, String refType, Long refId) {
+        if (userIds == null || userIds.isEmpty()) return;
+        String t = cut(title, 200);
+        List<Notification> batch = userIds.stream().distinct()
+                .map(id -> new Notification(userRepository.getReferenceById(id), t, content, type,
+                        courseId, imageUrl, refType, refId)).toList();
+        notificationRepository.saveAll(batch);
     }
 
     private Notification own(Long userId, Long notificationId) {
         return notificationRepository.findById(notificationId)
-                .filter(x -> x.getUser().getId().equals(userId))   // không cho đọc/sửa/xóa thông báo của người khác
+                .filter(x -> x.getUser().getId().equals(userId))
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy thông báo"));
     }
 

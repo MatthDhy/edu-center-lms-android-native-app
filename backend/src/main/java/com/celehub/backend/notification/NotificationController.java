@@ -16,7 +16,7 @@ import com.celehub.backend.common.PageResponse;
 import com.celehub.backend.notification.dto.NotificationDto;
 import com.celehub.backend.security.AuthUser;
 
-/** Chuông thông báo — dùng chung STUDENT, TEACHER. */
+/** Tab Thông báo — dùng chung STUDENT, TEACHER. type = GENERAL | CLASS (bỏ trống = tất cả). */
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
@@ -30,13 +30,14 @@ public class NotificationController {
     public ApiResponse<PageResponse<NotificationDto>> list(@AuthenticationPrincipal AuthUser me,
                                                            @RequestParam(defaultValue = "0") int page,
                                                            @RequestParam(defaultValue = "20") int size,
-                                                           @RequestParam(defaultValue = "false") boolean unreadOnly) {
-        return ApiResponse.success(notificationService.list(me.id(), page, size, unreadOnly));
+                                                           @RequestParam(defaultValue = "false") boolean unreadOnly,
+                                                           @RequestParam(required = false) NotificationType type) {
+        return ApiResponse.success(notificationService.list(me.id(), page, size, unreadOnly, type));
     }
 
     @GetMapping("/unread-count")
     public ApiResponse<Map<String, Long>> unreadCount(@AuthenticationPrincipal AuthUser me) {
-        return ApiResponse.success(Map.of("count", notificationService.unreadCount(me.id())));
+        return ApiResponse.success(notificationService.unreadCounts(me.id()));
     }
 
     @PatchMapping("/{id}/read")
@@ -46,8 +47,10 @@ public class NotificationController {
     }
 
     @PatchMapping("/read-all")
-    public ApiResponse<Map<String, Integer>> markAllRead(@AuthenticationPrincipal AuthUser me) {
-        return ApiResponse.success("Đã đánh dấu tất cả là đã đọc", Map.of("updated", notificationService.markAllRead(me.id())));
+    public ApiResponse<Map<String, Integer>> markAllRead(@AuthenticationPrincipal AuthUser me,
+                                                         @RequestParam(required = false) NotificationType type) {
+        return ApiResponse.success("Đã đánh dấu tất cả là đã đọc",
+                Map.of("updated", notificationService.markAllRead(me.id(), type)));
     }
 
     @DeleteMapping("/{id}")
