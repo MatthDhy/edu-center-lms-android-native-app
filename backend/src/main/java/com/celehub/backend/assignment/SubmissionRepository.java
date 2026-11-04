@@ -12,13 +12,13 @@ import org.springframework.data.repository.query.Param;
 
 public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
-    /** Bài nộp chưa chấm (score IS NULL) thuộc các lớp của giảng viên. */
-    @Query("SELECT COUNT(s) FROM Submission s WHERE s.assignment.course.teacher.id = :teacherId AND s.score IS NULL")
+    /** Bài nộp chưa chấm của các bài CÓ chấm điểm (graded = true) thuộc lớp của giảng viên. */
+    @Query("SELECT COUNT(s) FROM Submission s WHERE s.assignment.course.teacher.id = :teacherId AND s.score IS NULL AND s.assignment.graded = true")
     long countPendingGrading(@Param("teacherId") Long teacherId);
 
     @Query("""
             SELECT s FROM Submission s JOIN FETCH s.student JOIN FETCH s.assignment a JOIN FETCH a.course c
-            WHERE c.teacher.id = :teacherId AND s.score IS NULL
+            WHERE c.teacher.id = :teacherId AND s.score IS NULL AND a.graded = true
             ORDER BY s.submittedAt DESC""")
     List<Submission> findPendingGrading(@Param("teacherId") Long teacherId, Pageable pageable);
 

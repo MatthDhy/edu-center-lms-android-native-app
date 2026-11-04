@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
-    /** Bài tập còn hạn mà học viên CHƯA nộp, hạn gần nhất lên đầu. (dùng cho Home học viên) */
     @Query("""
             SELECT a FROM Assignment a JOIN FETCH a.course c
             WHERE a.deadline IS NOT NULL AND a.deadline > :now
@@ -21,7 +20,6 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
     List<Assignment> findOpenForStudent(@Param("studentId") Long studentId, @Param("now") LocalDateTime now,
                                         Pageable pageable);
 
-    /** Bài tập giảng viên đã giao mà vẫn còn hạn nộp, hạn gần nhất lên đầu. (dùng cho Home giảng viên) */
     @Query("""
             SELECT a FROM Assignment a JOIN FETCH a.course c
             WHERE c.teacher.id = :teacherId AND a.deadline IS NOT NULL AND a.deadline > :now
@@ -39,11 +37,17 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
             WHERE c.id = :courseId ORDER BY a.deadline DESC, a.id DESC""")
     List<Assignment> findByCourse(@Param("courseId") Long courseId);
 
-    /** Mọi bài tập thuộc các lớp học viên đang học. courseId = 0 nghĩa là tất cả lớp. */
     @Query("""
             SELECT a FROM Assignment a JOIN FETCH a.course c JOIN FETCH c.teacher
             WHERE c.id IN (SELECT e.course.id FROM Enrollment e WHERE e.student.id = :studentId AND e.status = 'ACTIVE')
               AND (:courseId = 0L OR c.id = :courseId)
             ORDER BY a.deadline ASC, a.id ASC""")
     List<Assignment> findAllForStudent(@Param("studentId") Long studentId, @Param("courseId") long courseId);
+
+    /** Mọi bài tập của giảng viên (courseId = 0: mọi lớp). Dùng cho tab Bài tập của giảng viên. */
+    @Query("""
+            SELECT a FROM Assignment a JOIN FETCH a.course c
+            WHERE c.teacher.id = :teacherId AND (:courseId = 0L OR c.id = :courseId)
+            ORDER BY a.createdAt DESC""")
+    List<Assignment> findForTeacher(@Param("teacherId") Long teacherId, @Param("courseId") long courseId);
 }

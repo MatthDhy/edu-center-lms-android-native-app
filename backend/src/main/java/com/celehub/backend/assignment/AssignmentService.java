@@ -30,6 +30,7 @@ import com.celehub.backend.course.CourseService;
 import com.celehub.backend.course.Enrollment;
 import com.celehub.backend.course.EnrollmentRepository;
 import com.celehub.backend.notification.NotificationService;
+import com.celehub.backend.quiz.QuizService;
 import com.celehub.backend.security.AuthUser;
 import com.celehub.backend.storage.StorageService;
 import com.celehub.backend.storage.UploadValidator;
@@ -42,6 +43,7 @@ import com.celehub.backend.user.dto.StudentBriefDto;
 public class AssignmentService {
     private static final long MAX_FILE = 20L * 1024 * 1024;
     private static final DateTimeFormatter FULL = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+    private static final String REF = "ASSIGNMENT";
 
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
@@ -50,11 +52,12 @@ public class AssignmentService {
     private final CourseService courseService;
     private final StorageService storageService;
     private final NotificationService notificationService;
+    private final QuizService quizService;
 
     public AssignmentService(AssignmentRepository assignmentRepository, SubmissionRepository submissionRepository,
                              EnrollmentRepository enrollmentRepository, UserRepository userRepository,
                              CourseService courseService, StorageService storageService,
-                             NotificationService notificationService) {
+                             NotificationService notificationService, QuizService quizService) {
         this.assignmentRepository = assignmentRepository;
         this.submissionRepository = submissionRepository;
         this.enrollmentRepository = enrollmentRepository;
@@ -62,6 +65,7 @@ public class AssignmentService {
         this.courseService = courseService;
         this.storageService = storageService;
         this.notificationService = notificationService;
+        this.quizService = quizService;
     }
 
     // =====================================================================
@@ -70,7 +74,7 @@ public class AssignmentService {
 
     @Transactional
     public AssignmentDto create(AuthUser me, Long courseId, String title, String description,
-                                LocalDateTime deadline, BigDecimal maxScore, MultipartFile file) {
+                                LocalDateTime deadline, BigDecimal maxScore, boolean graded, MultipartFile file) {
         Course c = courseService.requireTeacherOf(me, courseId);
         String t = requireTitle(title);
         if (deadline == null) throw new AppException(HttpStatus.BAD_REQUEST, "Hạn nộp không được để trống");
@@ -79,12 +83,13 @@ public class AssignmentService {
         boolean hasFile = file != null && !file.isEmpty();
         if (hasFile) UploadValidator.require(file, UploadValidator.DOCUMENTS, MAX_FILE, "đính kèm");
 
-        Assignment a = new Assignment(c, t, blankToNull(description), deadline, max);
+        Assignment a = new Assignment(c, t, blankToNull(description), deadline, max, graded);
         if (hasFile) a.setAttachmentUrl(storageService.upload(file, "assignments"));
         assignmentRepository.save(a);
 
         notificationService.createForUsers(enrollmentRepository.findActiveStudentIds(courseId),
-                "Bài tập mới: " + t, c.getCourseName() + " - hạn nộp " + deadline.format(FULL));
+                "Bài tập mới: " + t, c.getCourseName() + " - hạn nộp " + deadline.format(FULL),
+                courseId, REF, a.getId());
         return teacherDto(a, enrollmentRepository.countByCourseIdAndStatus(courseId, Enrollment.ACTIVE), LocalDateTime.now());
     }
 
@@ -107,7 +112,8 @@ public class AssignmentService {
         if (req.deadline() != null && !req.deadline().equals(a.getDeadline())) {
             a.setDeadline(req.deadline());
             notificationService.createForUsers(enrollmentRepository.findActiveStudentIds(courseId),
-                    "Đổi hạn nộp: " + a.getTitle(), "Hạn nộp mới: " + req.deadline().format(FULL));
+                    "Đổi hạn nộp: " + a.getTitle(), "Hạn nộp mới: " + req.deadline().format(FULL),
+                    courseId, REF, a.getId());
         }
         return teacherDto(a, enrollmentRepository.countByCourseIdAndStatus(courseId, Enrollment.ACTIVE), LocalDateTime.now());
     }
@@ -151,7 +157,6 @@ public class AssignmentService {
     //  ĐỌC: danh sách / chi tiết
     // =====================================================================
 
-    /** Danh sách bài tập của 1 lớp. HV thấy trạng thái của mình, GV/Admin thấy số đã nộp / đã chấm. */
     @Transactional(readOnly = true)
     public List<AssignmentDto> listByCourse(AuthUser me, Long courseId) {
         courseService.requireAccess(me, courseId);
@@ -166,16 +171,27 @@ public class AssignmentService {
     }
 
     /**
-     * Tab "Bài tập" của học viên. status: TODO (chưa nộp) | SUBMITTED (chờ chấm) | GRADED | rỗng = tất cả.
-     * TODO sắp theo hạn gần nhất lên đầu; các tab còn lại sắp theo hạn mới nhất lên đầu.
+     * Tab "Bài tập" của học viên.
+     * type: ESSAY (mặc định, giữ tương thích app cũ) | QUIZ | ALL (gộp bài tập + quiz).
+     * status: TODO (chưa nộp / chưa làm / quá hạn) | SUBMITTED (bài tự luận chờ chấm) | GRADED
+     *         (đã có điểm — quiz đã nộp nằm ở đây vì chấm tự động) | rỗng = tất cả.
      */
     @Transactional(readOnly = true)
-    public List<AssignmentDto> mine(AuthUser me, Long courseId, String status) {
-        List<Assignment> list = assignmentRepository.findAllForStudent(me.id(), courseId == null ? 0L : courseId);
-        if (list.isEmpty()) return List.of();
+    public List<AssignmentDto> mine(AuthUser me, Long courseId, String status, String type) {
+        String t = type == null || type.isBlank() ? "ESSAY" : type.trim().toUpperCase();
+        if (!Set.of("ESSAY", "QUIZ", "ALL").contains(t)) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "type chỉ nhận ESSAY, QUIZ hoặc ALL");
+        }
         LocalDateTime now = LocalDateTime.now();
-        Map<Long, Submission> subs = mySubmissions(me.id(), list);
-        List<AssignmentDto> all = list.stream().map(a -> studentDto(a, subs.get(a.getId()), now)).toList();
+        List<AssignmentDto> all = new ArrayList<>();
+        if (!"QUIZ".equals(t)) {
+            List<Assignment> list = assignmentRepository.findAllForStudent(me.id(), courseId == null ? 0L : courseId);
+            if (!list.isEmpty()) {
+                Map<Long, Submission> subs = mySubmissions(me.id(), list);
+                list.forEach(a -> all.add(studentDto(a, subs.get(a.getId()), now)));
+            }
+        }
+        if (!"ESSAY".equals(t)) all.addAll(quizService.mineAsTasks(me, courseId));
 
         String f = status == null ? "" : status.trim().toUpperCase();
         Comparator<AssignmentDto> byDeadlineAsc = Comparator.comparing(AssignmentDto::deadline,
@@ -189,7 +205,7 @@ public class AssignmentService {
             case "GRADED":
                 return all.stream().filter(x -> "GRADED".equals(x.status())).sorted(byDeadlineAsc.reversed()).toList();
             case "":
-                return all;
+                return all.stream().sorted(byDeadlineAsc).toList();
             default:
                 throw new AppException(HttpStatus.BAD_REQUEST, "status chỉ nhận TODO, SUBMITTED hoặc GRADED");
         }
@@ -212,7 +228,6 @@ public class AssignmentService {
     //  HỌC VIÊN: nộp bài
     // =====================================================================
 
-    /** Nộp lần đầu hoặc nộp lại (khi chưa được chấm). Quá hạn vẫn nhận nhưng gắn late = true. */
     @Transactional
     public SubmissionDto submit(AuthUser me, Long assignmentId, MultipartFile file) {
         Assignment a = loadDetail(assignmentId);
@@ -236,7 +251,8 @@ public class AssignmentService {
             User student = userRepository.getReferenceById(me.id());
             s = submissionRepository.save(new Submission(a, student, url, now, late));
             notificationService.create(a.getCourse().getTeacher().getId(), "Có bài nộp mới",
-                    student.getFullName() + " đã nộp \"" + a.getTitle() + "\"" + (late ? " (trễ hạn)" : ""));
+                    student.getFullName() + " đã nộp \"" + a.getTitle() + "\"" + (late ? " (trễ hạn)" : ""),
+                    courseId, REF, assignmentId);
         } else {
             oldUrl = existing.getFileUrl();
             existing.resubmit(url, now, late);
@@ -271,7 +287,6 @@ public class AssignmentService {
                 subs.stream().map(SubmissionDto::from).toList(), notSubmitted);
     }
 
-    /** Chi tiết 1 bài nộp: GV/Admin của lớp, hoặc chính học viên đó. */
     @Transactional(readOnly = true)
     public SubmissionDto submissionDetail(AuthUser me, Long submissionId) {
         Submission s = submissionRepository.findDetail(submissionId)
@@ -290,6 +305,9 @@ public class AssignmentService {
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy bài nộp"));
         Assignment a = s.getAssignment();
         courseService.requireTeacherOf(me, a.getCourse().getId());
+        if (!a.isGraded()) {
+            throw new AppException(HttpStatus.CONFLICT, "Bài tập này không chấm điểm");
+        }
 
         BigDecimal score = req.score().setScale(2, RoundingMode.HALF_UP);
         if (score.compareTo(a.getMaxScore()) > 0) {
@@ -297,11 +315,11 @@ public class AssignmentService {
         }
         s.grade(score, blankToNull(req.feedback()), LocalDateTime.now());
         notificationService.create(s.getStudent().getId(), "Bài tập đã được chấm điểm",
-                a.getTitle() + ": " + plain(score) + "/" + plain(a.getMaxScore()));
+                a.getTitle() + ": " + plain(score) + "/" + plain(a.getMaxScore()),
+                a.getCourse().getId(), REF, a.getId());
         return SubmissionDto.from(s);
     }
 
-    /** Nhắc tất cả học viên CHƯA nộp (tạo thông báo; push FCM làm ở bước sau). */
     @Transactional
     public Map<String, Integer> remindAll(AuthUser me, Long assignmentId) {
         Assignment a = loadDetail(assignmentId);
@@ -314,7 +332,8 @@ public class AssignmentService {
                 .filter(sid -> !submitted.contains(sid)).toList();
 
         String when = a.getDeadline() == null ? "" : " - hạn nộp " + a.getDeadline().format(FULL);
-        notificationService.createForUsers(pending, "Nhắc nộp bài: " + a.getTitle(), a.getCourse().getCourseName() + when);
+        notificationService.createForUsers(pending, "Nhắc nộp bài: " + a.getTitle(),
+                a.getCourse().getCourseName() + when, courseId, REF, assignmentId);
         return Map.of("reminded", pending.size());
     }
 
@@ -339,6 +358,7 @@ public class AssignmentService {
         if (s == null) {
             status = a.getDeadline() != null && now.isAfter(a.getDeadline()) ? "OVERDUE" : "PENDING";
         } else {
+            // bài không chấm điểm không bao giờ có score nên luôn dừng ở SUBMITTED
             status = s.getScore() != null ? "GRADED" : "SUBMITTED";
         }
         return dto(a, status, s == null ? null : SubmissionDto.from(s), null, null, null, now);
@@ -355,7 +375,7 @@ public class AssignmentService {
         Long minutesLeft = a.getDeadline() == null ? null : Duration.between(now, a.getDeadline()).toMinutes();
         return new AssignmentDto(a.getId(), "ESSAY", c.getId(), c.getCourseName(), a.getTitle(), a.getDescription(),
                 a.getAttachmentUrl(), a.getDeadline(), a.getMaxScore(), a.getCreatedAt(), minutesLeft, status, mine,
-                submitted, graded, total);
+                submitted, graded, total, a.isGraded(), null, null, null, null, null);
     }
 
     private static String requireTitle(String title) {

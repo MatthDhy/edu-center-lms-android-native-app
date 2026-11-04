@@ -39,17 +39,23 @@ public class Assignment {
     @Column(name = "max_score", nullable = false)
     private BigDecimal maxScore = BigDecimal.TEN;
 
+    /** true = giảng viên chấm điểm tay; false = chỉ theo dõi đã nộp / chưa nộp. */
+    @Column(nullable = false)
+    private boolean graded = true;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     protected Assignment() {}
 
-    public Assignment(Course course, String title, String description, LocalDateTime deadline, BigDecimal maxScore) {
+    public Assignment(Course course, String title, String description, LocalDateTime deadline,
+                      BigDecimal maxScore, boolean graded) {
         this.course = course;
         this.title = title;
         this.description = description;
         this.deadline = deadline;
         this.maxScore = maxScore;
+        this.graded = graded;
     }
 
     public Long getId() { return id; }
@@ -64,5 +70,6 @@ public class Assignment {
     public void setDeadline(LocalDateTime deadline) { this.deadline = deadline; }
     public BigDecimal getMaxScore() { return maxScore; }
     public void setMaxScore(BigDecimal maxScore) { this.maxScore = maxScore; }
+    public boolean isGraded() { return graded; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }
