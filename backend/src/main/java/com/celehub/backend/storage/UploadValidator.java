@@ -15,6 +15,8 @@ public final class UploadValidator {
             "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt", "zip", "png", "jpg", "jpeg", "webp");
     public static final Set<String> SUBMISSIONS = Set.of(
             "pdf", "doc", "docx", "png", "jpg", "jpeg", "webp", "heic");
+    public static final Set<String> IMAGES = Set.of("png", "jpg", "jpeg", "webp");
+    public static final Set<String> EXCEL = Set.of("xlsx");
 
     private UploadValidator() {}
 
