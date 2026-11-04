@@ -43,7 +43,7 @@ public class AssignmentController {
 
     // ---------------- Giảng viên: giao bài ----------------
 
-    /** multipart/form-data: title, description?, deadline (2026-10-30T23:59:00), maxScore?, file? */
+    /** multipart/form-data: title, description?, deadline, maxScore?, graded? (mặc định true), file? */
     @PostMapping(value = "/courses/{courseId}/assignments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('TEACHER')")
     public ApiResponse<AssignmentDto> create(
@@ -53,9 +53,10 @@ public class AssignmentController {
             @RequestParam(required = false) String description,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline,
             @RequestParam(required = false) BigDecimal maxScore,
+            @RequestParam(defaultValue = "true") boolean graded,
             @RequestPart(value = "file", required = false) MultipartFile file) {
         return ApiResponse.success("Đã giao bài tập",
-                assignmentService.create(me, courseId, title, description, deadline, maxScore, file));
+                assignmentService.create(me, courseId, title, description, deadline, maxScore, graded, file));
     }
 
     @PutMapping("/assignments/{id}")
@@ -94,13 +95,14 @@ public class AssignmentController {
         return ApiResponse.success(assignmentService.listByCourse(me, courseId));
     }
 
-    /** Tab Bài tập của học viên: ?courseId=&status=TODO|SUBMITTED|GRADED */
+    /** Tab Bài tập của học viên: ?courseId=&status=TODO|SUBMITTED|GRADED&type=ESSAY|QUIZ|ALL (mặc định ESSAY) */
     @GetMapping("/assignments/mine")
     @PreAuthorize("hasRole('STUDENT')")
     public ApiResponse<List<AssignmentDto>> mine(@AuthenticationPrincipal AuthUser me,
                                                  @RequestParam(required = false) Long courseId,
-                                                 @RequestParam(required = false) String status) {
-        return ApiResponse.success(assignmentService.mine(me, courseId, status));
+                                                 @RequestParam(required = false) String status,
+                                                 @RequestParam(required = false) String type) {
+        return ApiResponse.success(assignmentService.mine(me, courseId, status, type));
     }
 
     @GetMapping("/assignments/{id}")
