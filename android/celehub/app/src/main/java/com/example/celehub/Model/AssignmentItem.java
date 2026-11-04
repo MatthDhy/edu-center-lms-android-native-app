@@ -43,4 +43,8 @@ public class AssignmentItem {
     public boolean isOverdue() { return "OVERDUE".equals(status); }
     public boolean isSubmitted() { return "SUBMITTED".equals(status); }
     public boolean isGraded() { return "GRADED".equals(status); }
+    public Long getMinutesLeft() { return minutesLeft; }
+
+    /** Đã hết hạn nộp (backend trả minutesLeft âm). */
+    public boolean isClosed() { return minutesLeft != null && minutesLeft < 0; }
 }

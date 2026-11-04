@@ -112,4 +112,23 @@ public final class HomeFormat {
     public static String score(double v) {
         return v == Math.rint(v) ? String.valueOf((long) v) : String.valueOf(v);
     }
+    /** "2026-10-15T20:15:00" -> "15/10, 20:15" */
+    public static String shortDateTime(String iso) {
+        Date d = parse(iso);
+        return d == null ? "" : fmt(d, "dd/MM, HH:mm");
+    }
+
+    /** "Gia Huy" -> "GH" (chữ cái đầu của từ đầu và từ cuối). */
+    public static String initials(String fullName) {
+        if (fullName == null || fullName.trim().isEmpty()) return "?";
+        String[] parts = fullName.trim().split("\\s+");
+        String first = parts[0].substring(0, 1);
+        String last = parts.length > 1 ? parts[parts.length - 1].substring(0, 1) : "";
+        return (first + last).toUpperCase();
+    }
+
+    /** 248 -> "HV0248", giống mã hiển thị ở màn Cá nhân. */
+    public static String studentCode(Long id) {
+        return id == null ? "" : String.format(Locale.US, "HV%04d", id);
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.celehub.API;
 
 import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -14,6 +15,7 @@ import com.example.celehub.Model.ApiResponse;
 import com.example.celehub.Model.AssignmentItem;
 import com.example.celehub.Model.AuthResponse;
 import com.example.celehub.Model.CourseItem;
+import com.example.celehub.Model.GradeBody;
 import com.example.celehub.Model.HomeStudentResponse;
 import com.example.celehub.Model.HomeTeacherResponse;
 import com.example.celehub.Model.LoginRequest;
@@ -22,6 +24,7 @@ import com.example.celehub.Model.ChangePasswordRequest;
 import com.example.celehub.Model.MaterialItem;
 import com.example.celehub.Model.StudentItem;
 import com.example.celehub.Model.SubmissionItem;
+import com.example.celehub.Model.SubmissionsOverview;
 import com.example.celehub.Model.UserDto;
 import com.example.celehub.Model.ForgotPasswordRequest;
 import com.example.celehub.Model.VerifyOtpRequest;
@@ -89,4 +92,24 @@ public interface ApiService {
     @POST("api/assignments/{id}/submit")
     Call<ApiResponse<SubmissionItem>> submitAssignment(@Path("id") long id,
                                                        @Part MultipartBody.Part file);
+    /** Bài tập của một lớp. Giảng viên nhận thêm số bài đã nộp và đã chấm. */
+    @GET("api/courses/{courseId}/assignments")
+    Call<ApiResponse<List<AssignmentItem>>> getCourseAssignments(@Path("courseId") long courseId);
+
+    /** Giao bài tập mới. Chỉ title và deadline bắt buộc; description và file có thể là null. */
+    @Multipart
+    @POST("api/courses/{courseId}/assignments")
+    Call<ApiResponse<AssignmentItem>> createAssignment(@Path("courseId") long courseId,
+                                                       @Part("title") RequestBody title,
+                                                       @Part("description") RequestBody description,
+                                                       @Part("deadline") RequestBody deadline,
+                                                       @Part MultipartBody.Part file);
+    /** Giảng viên: bài nộp của một bài tập (kèm thông tin bài). */
+    @GET("api/assignments/{id}/submissions")
+    Call<ApiResponse<SubmissionsOverview>> getSubmissions(@Path("id") long assignmentId);
+
+    /** Chấm điểm. Backend từ chối điểm âm hoặc vượt điểm tối đa, và gửi thông báo cho học viên. */
+    @PATCH("api/submissions/{id}/grade")
+    Call<ApiResponse<SubmissionItem>> gradeSubmission(@Path("id") long submissionId,
+                                                      @Body GradeBody body);
 }

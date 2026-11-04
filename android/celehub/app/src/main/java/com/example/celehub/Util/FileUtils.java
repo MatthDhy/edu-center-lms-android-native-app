@@ -177,4 +177,16 @@ public final class FileUtils {
             }
         }
     }
+    /** Đuôi tệp backend nhận cho tài liệu và đề bài (UploadValidator.DOCUMENTS). */
+    public static final Set<String> DOCUMENT_EXTENSIONS = new HashSet<>(Arrays.asList(
+            "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt", "zip",
+            "png", "jpg", "jpeg", "webp"));
+
+    /** Cho phép chọn mọi loại tệp, đuôi tệp sẽ được kiểm tra sau khi chọn. */
+    public static final String[] ALL_MIME_TYPES = {"*/*"};
+
+    /** Trường văn bản trong form multipart, mã hóa UTF-8 để giữ đúng tiếng Việt. */
+    public static RequestBody text(String value) {
+        return RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), value);
+    }
 }

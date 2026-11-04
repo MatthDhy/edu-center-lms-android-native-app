@@ -72,4 +72,12 @@ public final class StatusChip {
                 apply(chip, "Chưa nộp", Variant.PRIMARY);
         }
     }
+    /** Chip trạng thái bài tập đã giao (giáo viên). */
+    public static void forTeacherAssignment(TextView chip, AssignmentItem a) {
+        if (a.isClosed()) {
+            apply(chip, "Đã đóng", Variant.NEUTRAL);
+        } else {
+            apply(chip, "Đang mở", Variant.WARNING);
+        }
+    }
 }
