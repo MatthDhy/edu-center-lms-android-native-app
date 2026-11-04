@@ -28,8 +28,13 @@ public class AssignmentAdapter extends RecyclerView.Adapter<AssignmentAdapter.Ho
     private final List<AssignmentItem> items = new ArrayList<>();
     private Map<Long, String> teachers = new HashMap<>();   // courseId -> tên giảng viên
     private final Listener listener;
+    private final boolean teacherMode;
 
     public AssignmentAdapter(Listener listener) {
+        this(false, listener);
+    }
+    public AssignmentAdapter(boolean teacherMode, Listener listener) {
+        this.teacherMode = teacherMode;
         this.listener = listener;
     }
 
@@ -55,6 +60,23 @@ public class AssignmentAdapter extends RecyclerView.Adapter<AssignmentAdapter.Ho
     @Override
     public void onBindViewHolder(@NonNull Holder h, int position) {
         AssignmentItem a = items.get(position);
+        if (teacherMode) {
+            h.title.setText(a.getTitle());
+            h.course.setText(a.getCourseName());
+            h.deadline.setText("Hạn nộp: " + HomeFormat.dateTime(a.getDeadline()));
+            StatusChip.forTeacherAssignment(h.chip, a);
+
+            long submitted = a.getSubmittedCount() == null ? 0 : a.getSubmittedCount();
+            long graded = a.getGradedCount() == null ? 0 : a.getGradedCount();
+            long total = a.getTotalStudents() == null ? 0 : a.getTotalStudents();
+            String extra = submitted + "/" + total + " đã nộp";
+            if (submitted - graded > 0) extra += " • " + (submitted - graded) + " chờ chấm";
+            h.extra.setText(extra);
+            h.extra.setVisibility(View.VISIBLE);
+
+            h.card.setOnClickListener(v -> listener.onAssignmentClick(a));
+            return;
+        }
 
         h.title.setText(a.getTitle());
 

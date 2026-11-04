@@ -73,7 +73,13 @@ public class CourseDetailFragment extends Fragment {
             view.findViewById(R.id.btnAddMaterial).setOnClickListener(v ->
                     Toast.makeText(requireContext(), "Thêm tài liệu", Toast.LENGTH_SHORT).show());
             view.findViewById(R.id.btnAddAssignment).setOnClickListener(v ->
-                    Toast.makeText(requireContext(), "Thêm bài tập", Toast.LENGTH_SHORT).show());
+                    getParentFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragmentContainer,
+                                    CreateAssignmentFragment.newInstance(
+                                            new long[]{courseId}, new String[]{name}, 0))
+                            .addToBackStack(null)
+                            .commit());
         }
 
         loadCourse();

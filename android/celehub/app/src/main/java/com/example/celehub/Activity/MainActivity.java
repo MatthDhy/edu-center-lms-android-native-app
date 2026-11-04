@@ -9,10 +9,13 @@ import androidx.fragment.app.Fragment;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.celehub.Data.SessionManager;
+import com.example.celehub.Fragment.AssignmentsFragment;
 import com.example.celehub.Fragment.CoursesFragment;
 import com.example.celehub.Fragment.HomeFragment;
 import com.example.celehub.Fragment.PlaceholderFragment;
 import com.example.celehub.Fragment.ProfileFragment;
+import com.example.celehub.Fragment.TeacherAssignmentsFragment;
 import com.example.celehub.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -75,7 +78,8 @@ public class MainActivity extends AppCompatActivity {
         } else if (menuId == R.id.nav_courses) {
         return new CoursesFragment();
         } else if (menuId == R.id.nav_assignments) {
-            return PlaceholderFragment.newInstance("Bài tập");
+            boolean teacher = "TEACHER".equals(SessionManager.get(this).getRole());
+            return teacher ? new TeacherAssignmentsFragment() : new AssignmentsFragment();
         } else if (menuId == R.id.nav_notifications) {
             return PlaceholderFragment.newInstance("Thông báo");
         } else if (menuId == R.id.nav_profile) {
