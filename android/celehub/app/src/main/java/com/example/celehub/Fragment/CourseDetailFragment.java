@@ -31,6 +31,7 @@ import com.example.celehub.Model.StudentItem;
 import com.example.celehub.R;
 import com.example.celehub.Util.ChildHeader;
 import com.example.celehub.Util.HomeFormat;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 /** Chi tiết một lớp. Học viên xem tài liệu; giảng viên thấy thêm số liệu, nút thao tác và danh sách học viên. */
 public class CourseDetailFragment extends Fragment {
@@ -69,9 +70,15 @@ public class CourseDetailFragment extends Fragment {
             view.findViewById(R.id.llTeacherActions).setVisibility(View.VISIBLE);
             view.findViewById(R.id.llStudentsSection).setVisibility(View.VISIBLE);
 
-            // Hai nút này sẽ được nối ở bước đăng tài liệu và bước bài tập
+
             view.findViewById(R.id.btnAddMaterial).setOnClickListener(v ->
-                    Toast.makeText(requireContext(), "Thêm tài liệu", Toast.LENGTH_SHORT).show());
+                    getParentFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragmentContainer,
+                                    CreateMaterialFragment.newInstance(courseId, name))
+                            .addToBackStack(null)
+                            .commit());
+
             view.findViewById(R.id.btnAddAssignment).setOnClickListener(v ->
                     getParentFragmentManager()
                             .beginTransaction()
@@ -215,10 +222,48 @@ public class CourseDetailFragment extends Fragment {
             } else {
                 metaView.setText(meta);
             }
+            if (isTeacher) {
+                row.findViewById(R.id.ivChevron).setVisibility(View.GONE);
+                View delete = row.findViewById(R.id.btnDeleteMaterial);
+                delete.setVisibility(View.VISIBLE);
+                delete.setOnClickListener(v -> confirmDeleteMaterial(m));
+            }
 
             row.setOnClickListener(v -> openFile(m.getFileUrl()));
             container.addView(row);
         }
+    }
+    private void confirmDeleteMaterial(MaterialItem m) {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Xóa tài liệu?")
+                .setMessage("Tài liệu \"" + m.getTitle() + "\" sẽ bị xóa khỏi lớp và học viên không còn thấy nữa.")
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Xóa", (dialog, which) -> deleteMaterial(m))
+                .show();
+    }
+    private void deleteMaterial(MaterialItem m) {
+        if (m.getId() == null) return;
+        ApiClient.get(requireContext()).deleteMaterial(m.getId())
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> res) {
+                        if (!isAdded() || getView() == null) return;
+                        if (res.isSuccessful()) {
+                            Toast.makeText(requireContext(), "Đã xóa tài liệu", Toast.LENGTH_SHORT).show();
+                            loadMaterials();   // tải lại danh sách
+                        } else {
+                            Toast.makeText(requireContext(),
+                                    ApiErrors.messageOf(res, "Xóa tài liệu thất bại"),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                        if (!isAdded() || getView() == null) return;
+                        Toast.makeText(requireContext(), ApiErrors.NETWORK_ERROR, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     private void bindStudents(List<StudentItem> list) {

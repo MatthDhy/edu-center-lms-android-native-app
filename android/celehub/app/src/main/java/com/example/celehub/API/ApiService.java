@@ -4,6 +4,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -112,4 +113,14 @@ public interface ApiService {
     @PATCH("api/submissions/{id}/grade")
     Call<ApiResponse<SubmissionItem>> gradeSubmission(@Path("id") long submissionId,
                                                       @Body GradeBody body);
+    /** Giảng viên đăng tài liệu cho lớp. title và file bắt buộc, description tùy chọn. */
+    @Multipart
+    @POST("api/courses/{courseId}/materials")
+    Call<ApiResponse<MaterialItem>> uploadMaterial(@Path("courseId") long courseId,
+                                                   @Part("title") RequestBody title,
+                                                   @Part("description") RequestBody description,
+                                                   @Part MultipartBody.Part file);
+    /** Giảng viên xóa tài liệu của lớp mình (xóa cả tệp, không khôi phục được). */
+    @DELETE("api/materials/{id}")
+    Call<ApiResponse<Void>> deleteMaterial(@Path("id") long materialId);
 }

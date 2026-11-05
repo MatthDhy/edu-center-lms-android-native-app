@@ -64,8 +64,23 @@
         </LinearLayout>
 
         <ImageView
+            android:id="@+id/btnDeleteMaterial"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="@color/color_danger_container"
+            android:contentDescription="Xóa tài liệu"
+            android:padding="10dp"
+            android:src="@drawable/ic_delete"
+            android:visibility="gone"
+            app:tint="@color/color_danger" />
+
+        <ImageView
+            android:id="@+id/ivChevron"
             android:layout_width="20dp"
             android:layout_height="20dp"
+            android:importantForAccessibility="no"
             android:src="@drawable/ic_chevron_right"
             app:tint="#9CA3AF" />
     </LinearLayout>

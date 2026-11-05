@@ -14,10 +14,6 @@
         android:icon="@drawable/ic_nav_assignments"
         android:title="Bài tập" />
     <item
-        android:id="@+id/nav_notifications"
-        android:icon="@drawable/ic_nav_notifications"
-        android:title="Thông báo" />
-    <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_nav_profile"
         android:title="Cá nhân" />

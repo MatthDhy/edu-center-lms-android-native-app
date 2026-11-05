@@ -80,8 +80,6 @@ public class MainActivity extends AppCompatActivity {
         } else if (menuId == R.id.nav_assignments) {
             boolean teacher = "TEACHER".equals(SessionManager.get(this).getRole());
             return teacher ? new TeacherAssignmentsFragment() : new AssignmentsFragment();
-        } else if (menuId == R.id.nav_notifications) {
-            return PlaceholderFragment.newInstance("Thông báo");
         } else if (menuId == R.id.nav_profile) {
             return new ProfileFragment();
         }
