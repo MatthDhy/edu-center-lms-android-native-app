@@ -1,5 +1,6 @@
 package com.example.celehub.Fragment;
 
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -273,6 +274,8 @@ public class AssignmentSubmitFragment extends Fragment {
         View v = getView();
         if (v == null) return;
         v.findViewById(R.id.btnSubmit).setEnabled(picked != null && !submitting);
+        v.findViewById(R.id.btnSubmit).setBackgroundTintList(ColorStateList.valueOf(requireContext().getColor(picked != null && !submitting
+                ? R.color.color_primary : R.color.color_disable)));
     }
 
     private TextView text(View root, int id) {

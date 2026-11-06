@@ -361,7 +361,7 @@
             android:enabled="false"
             android:text="Nộp bài"
             android:textSize="16sp"
-            app:backgroundTint="@color/color_primary"
+            app:backgroundTint="@color/color_disable"
             app:cornerRadius="16dp" />
     </LinearLayout>
 </LinearLayout>
