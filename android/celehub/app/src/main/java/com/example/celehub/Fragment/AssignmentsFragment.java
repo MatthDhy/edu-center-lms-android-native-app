@@ -63,7 +63,7 @@ public class AssignmentsFragment extends Fragment {
             if (a.getId() == null) return;
             getParentFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragmentContainer, AssignmentSubmitFragment.newInstance(a.getId()))
+                    .replace(R.id.fragmentContainer, AssignmentDetailFragment.newInstance(a.getId()))
                     .addToBackStack(null)
                     .commit();
         });

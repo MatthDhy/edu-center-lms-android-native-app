@@ -198,6 +198,19 @@
                         android:textColor="@color/color_text_secondary"
                         android:textSize="13sp"
                         android:visibility="gone" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDeleteSubmission"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="12dp"
+                        android:text="Xóa bài nộp"
+                        android:textColor="@color/color_danger"
+                        android:visibility="gone"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_delete"
+                        app:iconTint="@color/color_danger"
+                        app:strokeColor="@color/color_danger" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

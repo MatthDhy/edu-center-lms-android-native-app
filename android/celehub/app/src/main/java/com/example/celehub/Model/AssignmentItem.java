@@ -47,4 +47,6 @@ public class AssignmentItem {
 
     /** Đã hết hạn nộp (backend trả minutesLeft âm). */
     public boolean isClosed() { return minutesLeft != null && minutesLeft < 0; }
+    private String teacherName;
+    public String getTeacherName() { return teacherName; }
 }

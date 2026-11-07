@@ -13,7 +13,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -31,24 +34,39 @@ import com.example.celehub.Util.FileUtils;
 import com.example.celehub.Util.HomeFormat;
 import com.example.celehub.Util.StatusChip;
 
-/** Học viên xem đề bài và nộp bài làm (hoặc nộp lại nếu chưa được chấm). */
+/**
+ * Học viên nộp bài. Ba trạng thái:
+ *  - chưa nộp: chọn tệp rồi "Nộp bài";
+ *  - đã nộp, chưa bấm sửa: chỉ xem, nút dưới là "Sửa bài nộp";
+ *  - đang sửa: chọn lại tệp + "Nộp lại", hoặc "Xóa bài nộp" (có hộp thoại xác nhận).
+ */
 public class AssignmentSubmitFragment extends Fragment {
 
     private static final String ARG_ID = "assignment_id";
+    private static final String ARG_EDIT = "start_editing";
 
     private long assignmentId;
     private AssignmentItem assignment;
     private FileUtils.Picked picked;
-    private boolean submitting;
+    private boolean submitting;          // đang gọi API nộp hoặc xóa
+    private String busyLabel = "Đang xử lý...";
+    private boolean editing;             // đã bấm "Sửa bài nộp"
+    private boolean firstBind = true;
 
     // Phải đăng ký trước khi fragment được hiển thị nên khai báo ở đây
     private final ActivityResultLauncher<String[]> picker =
             registerForActivityResult(new ActivityResultContracts.OpenDocument(), this::onPicked);
 
     public static AssignmentSubmitFragment newInstance(long assignmentId) {
+        return newInstance(assignmentId, false);
+    }
+
+    /** startEditing = true: nếu đã nộp thì vào thẳng chế độ sửa (bỏ qua bước bấm "Sửa bài nộp"). */
+    public static AssignmentSubmitFragment newInstance(long assignmentId, boolean startEditing) {
         AssignmentSubmitFragment f = new AssignmentSubmitFragment();
         Bundle args = new Bundle();
         args.putLong(ARG_ID, assignmentId);
+        args.putBoolean(ARG_EDIT, startEditing);
         f.setArguments(args);
         return f;
     }
@@ -66,10 +84,85 @@ public class AssignmentSubmitFragment extends Fragment {
         view.findViewById(R.id.boxPick).setOnClickListener(v -> launchPicker());
         view.findViewById(R.id.btnPick).setOnClickListener(v -> launchPicker());
         view.findViewById(R.id.btnRemoveFile).setOnClickListener(v -> clearPicked());
-        view.findViewById(R.id.btnSubmit).setOnClickListener(v -> submit());
+        view.findViewById(R.id.btnSubmit).setOnClickListener(v -> onPrimaryClick());
+        view.findViewById(R.id.btnDeleteSubmission).setOnClickListener(v -> confirmDelete());
 
         loadAssignment();
         return view;
+    }
+
+    // ===================== Trạng thái =====================
+
+    private boolean hasSubmission() {
+        return assignment != null && assignment.getMySubmission() != null;
+    }
+
+    /** Bài đã chấm thì khóa hẳn, không nộp lại hay xóa được. */
+    private boolean canChange() {
+        return assignment != null && !assignment.isGraded();
+    }
+
+    private boolean uploadEnabled() {
+        return canChange() && !submitting && (!hasSubmission() || editing);
+    }
+
+    /** Vẽ lại các nút theo trạng thái hiện tại. */
+    private void render() {
+        View v = getView();
+        if (v == null || assignment == null) return;
+
+        boolean canChange = canChange();
+        boolean upload = uploadEnabled();
+
+        v.findViewById(R.id.llUpload).setVisibility(canChange ? View.VISIBLE : View.GONE);
+        View boxPick = v.findViewById(R.id.boxPick);
+        boxPick.setEnabled(upload);
+        boxPick.setAlpha(upload ? 1f : 0.5f);
+        View btnPick = v.findViewById(R.id.btnPick);
+        btnPick.setEnabled(upload);
+        btnPick.setBackgroundTintList(ColorStateList.valueOf(requireContext().getColor(
+                upload ? R.color.color_primary : R.color.color_disable)));
+        v.findViewById(R.id.btnRemoveFile).setEnabled(upload);
+
+        View delete = v.findViewById(R.id.btnDeleteSubmission);
+        delete.setVisibility(canChange && hasSubmission() && editing ? View.VISIBLE : View.GONE);
+        delete.setEnabled(!submitting);
+
+        TextView button = text(v, R.id.btnSubmit);
+        button.setVisibility(canChange ? View.VISIBLE : View.GONE);
+
+        String label;
+        boolean enabled;
+        if (submitting) {
+            label = busyLabel;
+            enabled = false;
+        } else if (hasSubmission() && !editing) {
+            label = "Sửa bài nộp";
+            enabled = true;
+        } else {
+            label = hasSubmission() ? "Nộp lại" : "Nộp bài";
+            enabled = picked != null;
+        }
+        button.setText(label);
+        button.setEnabled(enabled);
+        button.setBackgroundTintList(ColorStateList.valueOf(requireContext().getColor(
+                enabled ? R.color.color_primary : R.color.color_disable)));
+    }
+
+    private void setBusy(boolean value, String label) {
+        submitting = value;
+        if (label != null) busyLabel = label;
+        render();
+    }
+
+    private void onPrimaryClick() {
+        if (submitting || assignment == null) return;
+        if (hasSubmission() && !editing) {   // "Sửa bài nộp": mở khóa chọn tệp và xóa
+            editing = true;
+            render();
+            return;
+        }
+        submit();
     }
 
     // ===================== Tải bài tập =====================
@@ -103,6 +196,15 @@ public class AssignmentSubmitFragment extends Fragment {
         if (v == null) return;
         assignment = a;
 
+        if (firstBind) {
+            editing = requireArguments().getBoolean(ARG_EDIT, false)
+                    && a.getMySubmission() != null && !a.isGraded();
+            firstBind = false;
+        }
+
+        ((TextView) v.findViewById(R.id.tvHeaderTitle))
+                .setText(a.getMySubmission() != null ? "Bài nộp của tôi" : "Nộp bài tập");
+
         text(v, R.id.tvTitle).setText(a.getTitle());
         StatusChip.forAssignment(text(v, R.id.tvStatusChip), a);
         text(v, R.id.tvCourse).setText(a.getCourseName());
@@ -111,13 +213,7 @@ public class AssignmentSubmitFragment extends Fragment {
         v.findViewById(R.id.tvOverdueWarning).setVisibility(a.isOverdue() ? View.VISIBLE : View.GONE);
         bindBrief(v, a);
         bindMySubmission(v, a);
-
-        // Đã chấm thì chỉ xem, không nộp lại nữa
-        boolean canSubmit = !a.isGraded();
-        v.findViewById(R.id.llUpload).setVisibility(canSubmit ? View.VISIBLE : View.GONE);
-        v.findViewById(R.id.btnSubmit).setVisibility(canSubmit ? View.VISIBLE : View.GONE);
-        ((TextView) v.findViewById(R.id.btnSubmit)).setText(a.isSubmitted() ? "Nộp lại" : "Nộp bài");
-        refreshSubmitButton();
+        render();
     }
 
     /** Mô tả và tệp đề bài do giảng viên đính kèm (nếu có). */
@@ -173,7 +269,7 @@ public class AssignmentSubmitFragment extends Fragment {
     // ===================== Chọn tệp =====================
 
     private void launchPicker() {
-        if (submitting) return;
+        if (!uploadEnabled()) return;
         picker.launch(FileUtils.SUBMISSION_MIME_TYPES);
     }
 
@@ -202,14 +298,14 @@ public class AssignmentSubmitFragment extends Fragment {
         String size = FileUtils.readableSize(p.size);
         String type = FileUtils.typeLabel(p.name);
         text(v, R.id.tvFileMeta).setText(size.isEmpty() ? type : type + " • " + size);
-        refreshSubmitButton();
+        render();
     }
 
     private void clearPicked() {
         View v = getView();
         picked = null;
         if (v != null) v.findViewById(R.id.rowFile).setVisibility(View.GONE);
-        refreshSubmitButton();
+        render();
     }
 
     private void showFileError(String message) {
@@ -224,7 +320,7 @@ public class AssignmentSubmitFragment extends Fragment {
 
     private void submit() {
         if (picked == null || assignment == null || submitting) return;
-        setSubmitting(true);
+        setBusy(true, "Đang nộp...");
 
         MultipartBody.Part part = FileUtils.toPart(requireContext().getContentResolver(), picked, "file");
         ApiClient.get(requireContext()).submitAssignment(assignment.getId(), part)
@@ -236,10 +332,10 @@ public class AssignmentSubmitFragment extends Fragment {
                         if (res.isSuccessful()) {
                             Toast.makeText(requireContext(), "Nộp bài thành công",
                                     Toast.LENGTH_SHORT).show();
-                            // Quay lại danh sách, danh sách sẽ tải lại và hiện trạng thái mới
+                            // Quay lại màn chi tiết, màn đó tải lại và hiện trạng thái mới
                             getParentFragmentManager().popBackStack();
                         } else {
-                            setSubmitting(false);
+                            setBusy(false, null);
                             Toast.makeText(requireContext(),
                                     ApiErrors.messageOf(res, "Nộp bài thất bại"),
                                     Toast.LENGTH_LONG).show();
@@ -249,33 +345,59 @@ public class AssignmentSubmitFragment extends Fragment {
                     @Override
                     public void onFailure(Call<ApiResponse<SubmissionItem>> call, Throwable t) {
                         if (!isAdded()) return;
-                        setSubmitting(false);   // giữ nguyên tệp đã chọn để thử lại
+                        setBusy(false, null);   // giữ nguyên tệp đã chọn để thử lại
                         Toast.makeText(requireContext(), ApiErrors.NETWORK_ERROR,
                                 Toast.LENGTH_LONG).show();
                     }
                 });
     }
 
-    private void setSubmitting(boolean value) {
-        submitting = value;
-        View v = getView();
-        if (v == null) return;
-        TextView button = text(v, R.id.btnSubmit);
-        button.setText(value ? "Đang nộp..."
-                : (assignment != null && assignment.isSubmitted() ? "Nộp lại" : "Nộp bài"));
-        v.findViewById(R.id.boxPick).setEnabled(!value);
-        v.findViewById(R.id.btnPick).setEnabled(!value);
-        v.findViewById(R.id.btnRemoveFile).setEnabled(!value);
-        refreshSubmitButton();
+    // ===================== Xóa bài nộp =====================
+
+    private void confirmDelete() {
+        if (submitting || !hasSubmission()) return;
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Xóa bài nộp?")
+                .setMessage("Bài đã nộp sẽ bị xóa và không thể khôi phục. Bạn có thể nộp bài mới sau đó.")
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Xóa", (d, which) -> deleteSubmission())
+                .show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setTextColor(requireContext().getColor(R.color.color_danger));
     }
 
-    /** Nút Nộp bài chỉ bật khi đã có tệp và không đang gửi. */
-    private void refreshSubmitButton() {
-        View v = getView();
-        if (v == null) return;
-        v.findViewById(R.id.btnSubmit).setEnabled(picked != null && !submitting);
-        v.findViewById(R.id.btnSubmit).setBackgroundTintList(ColorStateList.valueOf(requireContext().getColor(picked != null && !submitting
-                ? R.color.color_primary : R.color.color_disable)));
+    private void deleteSubmission() {
+        setBusy(true, "Đang xóa...");
+        ApiClient.get(requireContext()).deleteMySubmission(assignmentId)
+                .enqueue(new Callback<ApiResponse<Void>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Void>> call,
+                                           Response<ApiResponse<Void>> res) {
+                        if (!isAdded()) return;
+                        if (res.isSuccessful()) {
+                            Toast.makeText(requireContext(), "Đã xóa bài nộp",
+                                    Toast.LENGTH_SHORT).show();
+                            // Về trạng thái "chưa nộp": bỏ chế độ sửa, bỏ tệp đang chọn, tải lại bài tập
+                            editing = false;
+                            clearPicked();
+                            setBusy(false, null);
+                            loadAssignment();
+                        } else {
+                            setBusy(false, null);
+                            Toast.makeText(requireContext(),
+                                    ApiErrors.messageOf(res, "Xóa bài nộp thất bại"),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                        if (!isAdded()) return;
+                        setBusy(false, null);
+                        Toast.makeText(requireContext(), ApiErrors.NETWORK_ERROR,
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     private TextView text(View root, int id) {

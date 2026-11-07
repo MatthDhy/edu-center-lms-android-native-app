@@ -123,4 +123,7 @@ public interface ApiService {
     /** Giảng viên xóa tài liệu của lớp mình (xóa cả tệp, không khôi phục được). */
     @DELETE("api/materials/{id}")
     Call<ApiResponse<Void>> deleteMaterial(@Path("id") long materialId);
+
+    @DELETE("api/assignments/{id}/submission")
+    Call<ApiResponse<Void>> deleteMySubmission(@Path("id") long assignmentId);
 }

@@ -1,9 +1,13 @@
 package com.example.celehub.Fragment;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +35,7 @@ import com.example.celehub.Model.TaskItem;
 import com.example.celehub.Model.UserDto;
 import com.example.celehub.R;
 import com.example.celehub.Util.HomeFormat;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
  * Trang chủ dùng chung cho học viên và giảng viên: cùng một layout,
@@ -39,6 +44,7 @@ import com.example.celehub.Util.HomeFormat;
 public class HomeFragment extends Fragment {
 
     private boolean isTeacher;
+    private static final int MAX_TASKS_SHOWN = 5;
 
     @Nullable
     @Override
@@ -177,28 +183,80 @@ public class HomeFragment extends Fragment {
         sub.setVisibility(View.VISIBLE);
 
         button.setVisibility(View.VISIBLE);
+        if (lesson.getCourseId() != null) {
+            button.setOnClickListener(v -> openChild(
+                    CourseDetailFragment.newInstance(lesson.getCourseId(), lesson.getCourseName())));
+        }
     }
 
     /** 2. Bài tập sắp đến hạn (học viên) / đã giao (giảng viên). Hiện bài gần hạn nhất. */
     private void bindTask(View view, @Nullable List<TaskItem> tasks) {
-        View card = view.findViewById(R.id.cardAssignment);
-        View empty = view.findViewById(R.id.tvTaskEmpty);
+            LinearLayout list = view.findViewById(R.id.llTasks);
+            View empty = view.findViewById(R.id.tvTaskEmpty);
+            list.removeAllViews();
 
-        if (tasks == null || tasks.isEmpty()) {
-            card.setVisibility(View.GONE);
-            empty.setVisibility(View.VISIBLE);
-            return;
+            if (tasks == null || tasks.isEmpty()) {
+                empty.setVisibility(View.VISIBLE);
+                return;
+            }
+            empty.setVisibility(View.GONE);
+
+            LayoutInflater inflater = LayoutInflater.from(requireContext());
+            int count = Math.min(tasks.size(), MAX_TASKS_SHOWN);   // backend đã sắp theo hạn gần nhất
+            for (int i = 0; i < count; i++) {
+                TaskItem t = tasks.get(i);
+                View row = inflater.inflate(R.layout.item_home_task, list, false);
+
+                text(row, R.id.tvTaskTitle).setText(t.getTitle());
+                text(row, R.id.tvTaskSub).setText(("QUIZ".equals(t.getType()) ? "Quiz • " : "")
+                        + HomeFormat.taskSub(t));
+
+                if ("QUIZ".equals(t.getType())) {
+                    ((ImageView) row.findViewById(R.id.imgTaskIcon)).setImageResource(R.drawable.ic_home_quiz);
+                }
+
+                TextView badge = text(row, R.id.tvTaskBadge);
+                badge.setText(HomeFormat.remaining(t));
+                if (t.isUrgent()) {
+                    badge.setBackgroundTintList(ColorStateList.valueOf(requireContext().getColor(R.color.color_danger_container)));
+                    badge.setTextColor(requireContext().getColor(R.color.color_danger));
+                } else {
+                    badge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FEF3C7")));
+                    badge.setTextColor(Color.parseColor("#B45309"));
+                }
+
+                row.setOnClickListener(v -> openTask(t));
+                list.addView(row);
+            }
         }
 
-        TaskItem t = tasks.get(0);   // backend đã sắp xếp theo hạn gần nhất
-        text(view, R.id.tvTaskTitle).setText(t.getTitle());
-        text(view, R.id.tvTaskSub).setText(HomeFormat.taskSub(t));
-        text(view, R.id.tvTaskBadge).setText(HomeFormat.remaining(t));
-        card.setVisibility(View.VISIBLE);
-        empty.setVisibility(View.GONE);
-        card.setOnClickListener(v ->
-                Toast.makeText(requireContext(), t.getTitle(), Toast.LENGTH_SHORT).show());
-    }
+// ===================== Điều hướng =====================
+
+        private void openTask(TaskItem t) {
+            if (t.getId() == null) return;
+            if ("QUIZ".equals(t.getType())) {
+                Toast.makeText(requireContext(), "Quiz sẽ có ở phiên bản sau", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (isTeacher) {            // giảng viên chưa có màn chi tiết bài tập -> sang tab Bài tập
+                openAssignmentsTab();
+                return;
+            }
+            openChild(AssignmentDetailFragment.newInstance(t.getId()));
+        }
+
+        private void openAssignmentsTab() {
+            BottomNavigationView nav = requireActivity().findViewById(R.id.bottomNav);
+            nav.setSelectedItemId(R.id.nav_assignments);
+        }
+
+        private void openChild(Fragment fragment) {
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
 
     /** Thông báo mới. Hiện tối đa 2 dòng như Figma; không có thì báo "không có thông báo mới". */
     private void bindNotifications(View view, @Nullable List<NotificationItem> list) {
@@ -240,15 +298,16 @@ public class HomeFragment extends Fragment {
     /** Tạm thời bấm vào đâu cũng hiện Toast. Sau này thay bằng mở màn hình thật. */
     private void setupClicks(View root) {
         bindToast(root, R.id.btnNotification, "Thông báo");
-        bindToast(root, R.id.btnViewClass, "Xem lớp học");
+
         bindToast(root, R.id.tileAttendance, "Điểm danh");
         bindToast(root, R.id.tileTuition, isTeacher ? "Lương" : "Học phí");
         bindToast(root, R.id.tileQuiz, "Quiz");
         bindToast(root, R.id.tileGrades, "Hồ sơ & Bảng điểm");
         bindToast(root, R.id.tileSchedule, isTeacher ? "Lịch dạy" : "Lịch học");
         bindToast(root, R.id.tileDocs, "Tài liệu");
-        bindToast(root, R.id.tvViewAllAssignments, "Xem tất cả bài tập");
+
         bindToast(root, R.id.tvViewAllNotifications, "Tất cả thông báo");
+        root.findViewById(R.id.tvViewAllAssignments).setOnClickListener(v -> openAssignmentsTab());
     }
 
     private void bindToast(View root, int viewId, String message) {
