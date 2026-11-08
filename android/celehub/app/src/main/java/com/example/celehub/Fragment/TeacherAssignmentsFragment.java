@@ -47,6 +47,7 @@ public class TeacherAssignmentsFragment extends Fragment {
 
     // Nhớ tab đang xem để quay lại từ màn Chấm bài hoặc Tạo bài vẫn ở đúng tab
     private static int lastTab = TAB_PENDING;
+    private static long lastCourseId = -1;
 
     private final List<CourseItem> courses = new ArrayList<>();
     private final List<AssignmentItem> assignments = new ArrayList<>();
@@ -76,7 +77,11 @@ public class TeacherAssignmentsFragment extends Fragment {
 
         // Tab Quản lý: danh sách bài đã giao
         assignmentAdapter = new AssignmentAdapter(true, a ->
-                Toast.makeText(requireContext(), a.getTitle(), Toast.LENGTH_SHORT).show());
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragmentContainer, TeacherAssignmentDetailFragment.newInstance(a.getId()))
+                        .addToBackStack(null)
+                        .commit());
         RecyclerView rvAssignments = view.findViewById(R.id.rvAssignments);
         rvAssignments.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvAssignments.setAdapter(assignmentAdapter);
@@ -123,7 +128,7 @@ public class TeacherAssignmentsFragment extends Fragment {
                                 applyTab();
                                 return;
                             }
-                            selected = 0;
+                            selected = indexOfCourse(lastCourseId);
                             bindSelected();
                             loadClassData();
                         } else {
@@ -340,6 +345,8 @@ public class TeacherAssignmentsFragment extends Fragment {
                     dialog.dismiss();
                     if (which == selected) return;
                     selected = which;
+                    Long chosenId = courses.get(which).getId();
+                    lastCourseId = chosenId == null ? -1 : chosenId;
                     bindSelected();
                     loadClassData();
                 })
@@ -350,6 +357,13 @@ public class TeacherAssignmentsFragment extends Fragment {
         View view = getView();
         if (view == null || selected < 0) return;
         text(view, R.id.tvClassName).setText(courses.get(selected).getCourseName());
+    }
+    private int indexOfCourse(long id){
+        for(int i = 0; i < courses.size(); i++){
+            Long courseId = courses.get(i).getId();
+            if (courseId != null && courseId == id) return i;
+        }
+        return 0;
     }
 
     /** Mở màn Chấm bài với danh sách đang hiện, bắt đầu từ bài được bấm. */

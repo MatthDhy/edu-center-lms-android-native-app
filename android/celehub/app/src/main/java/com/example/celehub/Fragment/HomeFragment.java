@@ -238,8 +238,8 @@ public class HomeFragment extends Fragment {
                 Toast.makeText(requireContext(), "Quiz sẽ có ở phiên bản sau", Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (isTeacher) {            // giảng viên chưa có màn chi tiết bài tập -> sang tab Bài tập
-                openAssignmentsTab();
+            if (isTeacher) {
+                openChild(TeacherAssignmentDetailFragment.newInstance(t.getId()));
                 return;
             }
             openChild(AssignmentDetailFragment.newInstance(t.getId()));

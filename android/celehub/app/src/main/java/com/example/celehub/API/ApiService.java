@@ -9,6 +9,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PATCH;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 
@@ -26,6 +27,7 @@ import com.example.celehub.Model.MaterialItem;
 import com.example.celehub.Model.StudentItem;
 import com.example.celehub.Model.SubmissionItem;
 import com.example.celehub.Model.SubmissionsOverview;
+import com.example.celehub.Model.UpdateAssignmentBody;
 import com.example.celehub.Model.UserDto;
 import com.example.celehub.Model.ForgotPasswordRequest;
 import com.example.celehub.Model.VerifyOtpRequest;
@@ -34,6 +36,7 @@ import com.example.celehub.Model.ResetPasswordRequest;
 import com.example.celehub.Model.UpdateProfileRequest;
 
 import java.util.List;
+import java.util.Map;
 
 /** Danh sách các API của backend mà app gọi. Mỗi hàm = một endpoint. */
 public interface ApiService {
@@ -126,4 +129,24 @@ public interface ApiService {
 
     @DELETE("api/assignments/{id}/submission")
     Call<ApiResponse<Void>> deleteMySubmission(@Path("id") long assignmentId);
+    /** Giảng viên sửa bài tập. Đổi hạn nộp thì backend tự gửi thông báo cho học viên. */
+    @PUT("api/assignments/{id}")
+    Call<ApiResponse<AssignmentItem>> updateAssignment(@Path("id") long id, @Body UpdateAssignmentBody body);
+
+    /** Giảng viên xóa bài tập, kèm toàn bộ bài nộp và tệp (không khôi phục được). */
+    @DELETE("api/assignments/{id}")
+    Call<ApiResponse<Void>> deleteAssignment(@Path("id") long id);
+
+    /** Nhắc các học viên chưa nộp. Trả về {"reminded": số người}. */
+    @POST("api/assignments/{id}/remind-all")
+    Call<ApiResponse<Map<String, Integer>>> remindAll(@Path("id") long id);
+    /** Giảng viên thay tệp đề bài (hoặc thêm nếu bài chưa có). Backend tự xóa tệp cũ. */
+    @Multipart
+    @POST("api/assignments/{id}/attachment")
+    Call<ApiResponse<AssignmentItem>> replaceAssignmentAttachment(@Path("id") long id,
+                                                                  @Part MultipartBody.Part file);
+
+    /** Giảng viên xóa tệp đề bài. */
+    @DELETE("api/assignments/{id}/attachment")
+    Call<ApiResponse<AssignmentItem>> removeAssignmentAttachment(@Path("id") long id);
 }
