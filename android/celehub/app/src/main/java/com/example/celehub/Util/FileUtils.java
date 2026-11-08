@@ -117,11 +117,12 @@ public final class FileUtils {
 
     /** Lấy tên tệp từ đường dẫn lưu trữ. */
     public static String nameFromUrl(String url) {
-        if (url == null) return "";
-        int q = url.indexOf('?');
-        if (q >= 0) url = url.substring(0, q);
-        int slash = url.lastIndexOf('/');
-        return Uri.decode(slash >= 0 ? url.substring(slash + 1) : url);
+        if (url == null || url.isEmpty()) return "";
+        Uri u = Uri.parse(url);
+        String name = u.getQueryParameter("name");      // đã tự giải mã %20, tiếng Việt...
+        if (name != null && !name.isEmpty()) return name;
+        String last = u.getLastPathSegment();
+        return last == null ? "" : last;
     }
 
     /** Mở tệp bằng trình duyệt hoặc ứng dụng phù hợp. */

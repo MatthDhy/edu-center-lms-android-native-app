@@ -16,5 +16,5 @@ services:
     container_name: celehub_webadmin
     restart: unless-stopped
     depends_on: [backend]
-    ports: ["3000:80"]
+    ports: ["80:80"]
   

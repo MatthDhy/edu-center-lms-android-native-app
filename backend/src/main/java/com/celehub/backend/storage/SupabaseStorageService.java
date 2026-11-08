@@ -36,14 +36,14 @@ public class SupabaseStorageService implements StorageService {
     public String upload(MultipartFile file, String folder) {
         String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
         String safeExt = (ext != null && ext.matches("[A-Za-z0-9]{1,8}")) ? "." + ext.toLowerCase() : "";
-        String path = folder + "/" + UUID.randomUUID() + safeExt;   // folder do code truyền, không từ client
+        String path = folder + "/" + UUID.randomUUID() + safeExt;
         try {
             String type = file.getContentType() != null ? file.getContentType() : "application/octet-stream";
             http.post().uri(URI.create(objectBase + path))
                 .contentType(MediaType.parseMediaType(type))
                 .body(file.getBytes())
                 .retrieve().toBodilessEntity();
-            return publicBase + path;
+            return publicBase + path + "?name=" + encodeName(file.getOriginalFilename());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể lưu tệp");
         }
@@ -53,8 +53,21 @@ public class SupabaseStorageService implements StorageService {
     public void delete(String url) {
         if (url == null || !url.startsWith(publicBase)) return;
         try {
-            http.delete().uri(URI.create(objectBase + url.substring(publicBase.length())))
+            int q = url.indexOf('?');                       // bỏ ?name=... trước khi xóa
+            String clean = q >= 0 ? url.substring(0, q) : url;
+            http.delete().uri(URI.create(objectBase + clean.substring(publicBase.length())))
                 .retrieve().toBodilessEntity();
         } catch (Exception ignored) { }
     }
-}
+
+    private static String encodeName(String original) {
+        String n = StringUtils.getFilename(original == null ? "" : original);
+        if (n == null || n.isBlank()) n = "tep";
+        n = n.replaceAll("\\p{Cntrl}", "");
+        if (n.length() > 150) {
+            String ext = StringUtils.getFilenameExtension(n);
+            n = n.substring(0, 140) + (ext != null && ext.length() <= 8 ? "." + ext : "");
+        }
+        return java.net.URLEncoder.encode(n, java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
+    }
+    }
