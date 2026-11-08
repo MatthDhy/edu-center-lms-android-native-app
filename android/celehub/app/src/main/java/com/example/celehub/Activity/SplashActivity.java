@@ -77,8 +77,8 @@ public class SplashActivity extends AppCompatActivity {
 
         tvAppName.setText(appName);
 
-        // Tu dong chuyen sang Login sau 3 giay
-        handler.postDelayed(navigateToLogin, 3000);
+        // Tu dong chuyen sang Login sau 2 giay
+        handler.postDelayed(navigateToLogin, 2000);
     }
 
     @Override
