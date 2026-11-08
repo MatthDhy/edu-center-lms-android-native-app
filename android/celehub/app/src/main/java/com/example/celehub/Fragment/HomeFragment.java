@@ -303,7 +303,7 @@ public class HomeFragment extends Fragment {
         bindToast(root, R.id.tileTuition, isTeacher ? "Lương" : "Học phí");
         bindToast(root, R.id.tileQuiz, "Quiz");
         bindToast(root, R.id.tileGrades, "Hồ sơ & Bảng điểm");
-        bindToast(root, R.id.tileSchedule, isTeacher ? "Lịch dạy" : "Lịch học");
+        root.findViewById(R.id.tileSchedule).setOnClickListener(v -> openChild(new ScheduleFragment()));
         bindToast(root, R.id.tileDocs, "Tài liệu");
 
         root.findViewById(R.id.tvViewAllNotifications).setOnClickListener(v-> openChild(new NotificationFragment()));

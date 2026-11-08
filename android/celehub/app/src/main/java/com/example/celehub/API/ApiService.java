@@ -21,6 +21,7 @@ import com.example.celehub.Model.CourseItem;
 import com.example.celehub.Model.GradeBody;
 import com.example.celehub.Model.HomeStudentResponse;
 import com.example.celehub.Model.HomeTeacherResponse;
+import com.example.celehub.Model.LessonItem;
 import com.example.celehub.Model.LoginRequest;
 import com.example.celehub.Model.ForceChangePasswordRequest;
 import com.example.celehub.Model.ChangePasswordRequest;
@@ -160,4 +161,7 @@ public interface ApiService {
 
     @PATCH("api/notifications/read-all")
     Call<ApiResponse<Map<String, Integer>>> markAllNotificationsRead();
+    /** Lịch cá nhân của học viên hoặc giảng viên, tối đa 62 ngày một lần. from/to dạng yyyy-MM-dd. */
+    @GET("api/lessons")
+    Call<ApiResponse<List<LessonItem>>> getLessons(@Query("from") String from, @Query("to") String to);
 }

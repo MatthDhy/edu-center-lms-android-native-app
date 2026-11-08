@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_child_header" />
+
+    <!-- Điều hướng tuần -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btnPrevWeek"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:contentDescription="Tuần trước"
+            android:focusable="true"
+            android:paddingStart="12dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="2dp"
+            android:text="‹"
+            android:textColor="@color/color_primary"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/tvWeekRange"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/inter_bold"
+            android:gravity="center"
+            android:textColor="@color/color_on_surface"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/btnNextWeek"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:contentDescription="Tuần sau"
+            android:focusable="true"
+            android:paddingStart="12dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="2dp"
+            android:text="›"
+            android:textColor="@color/color_primary"
+            android:textSize="30sp" />
+    </LinearLayout>
+
+    <!-- 7 ô ngày (được thêm bằng code) -->
+    <LinearLayout
+        android:id="@+id/llDays"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp" />
+
+    <!-- Ngày đang chọn + chọn ngày khác -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvSelectedDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/inter_bold"
+            android:textColor="@color/color_on_surface"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/btnPickDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:fontFamily="@font/inter_semibold"
+            android:padding="6dp"
+            android:text="Chọn ngày"
+            android:textColor="@color/color_primary"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="24dp">
+
+            <LinearLayout
+                android:id="@+id/llLessons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/tvEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:gravity="center"
+                android:textColor="@color/color_text_muted"
+                android:textSize="14sp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
