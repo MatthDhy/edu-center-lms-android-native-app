@@ -121,6 +121,14 @@ public class AssignmentController {
         return ApiResponse.success("Đã nộp bài", assignmentService.submit(me, id, file));
     }
 
+    /** Học viên xóa bài nộp của mình (chưa chấm điểm) để nộp lại. */
+    @DeleteMapping("/assignments/{id}/submission")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ApiResponse<Void> deleteMySubmission(@AuthenticationPrincipal AuthUser me, @PathVariable Long id) {
+        assignmentService.deleteMySubmission(me, id);
+        return ApiResponse.success("Đã xóa bài nộp", null);
+    }
+
     // ---------------- Giảng viên: chấm bài ----------------
 
     @GetMapping("/assignments/{id}/submissions")

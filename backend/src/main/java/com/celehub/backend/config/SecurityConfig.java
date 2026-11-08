@@ -43,6 +43,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(a -> a
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/login", "/api/auth/forgot-password/**").permitAll()
+                .requestMatchers("/api/webhooks/**").permitAll()          // webhook ngân hàng: tự xác thực bằng khóa bí mật
                 .requestMatchers("/files/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -59,10 +60,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Cho Web Admin gọi API từ trình duyệt. Danh sách origin lấy từ app.cors.allowed-origin-patterns
-     * (biến môi trường CORS_ORIGINS, cách nhau bởi dấu phẩy). Mobile không cần CORS.
-     */
+    /** Cho Web Admin gọi API từ trình duyệt (CORS_ORIGINS, cách nhau bởi dấu phẩy). Mobile không cần CORS. */
     @Bean
     CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*}") List<String> patterns) {

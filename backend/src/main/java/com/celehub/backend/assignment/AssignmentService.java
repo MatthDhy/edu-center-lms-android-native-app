@@ -262,6 +262,23 @@ public class AssignmentService {
         return SubmissionDto.from(s);
     }
 
+    /**
+     * Học viên xóa bài nộp của mình (để nộp lại file khác). Chỉ xóa được khi CHƯA được chấm điểm.
+     * File trên storage bị xóa theo. Sau khi xóa, trạng thái bài quay về PENDING/OVERDUE.
+     */
+    @Transactional
+    public void deleteMySubmission(AuthUser me, Long assignmentId) {
+        loadDetail(assignmentId);
+        Submission s = submissionRepository.findByAssignmentIdAndStudentId(assignmentId, me.id())
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Bạn chưa nộp bài này"));
+        if (s.getScore() != null) {
+            throw new AppException(HttpStatus.CONFLICT, "Bài đã được chấm điểm, không thể xóa");
+        }
+        String url = s.getFileUrl();
+        submissionRepository.delete(s);
+        if (url != null) storageService.delete(url);
+    }
+
     // =====================================================================
     //  GIẢNG VIÊN: xem bài nộp, chấm điểm, nhắc nhở
     // =====================================================================
