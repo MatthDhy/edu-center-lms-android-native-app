@@ -13,4 +13,5 @@ public class NotificationItem {
     public String getContent() { return content; }
     public boolean isRead() { return read; }
     public String getCreatedAt() { return createdAt; }
+    public void markRead() { this.read = true; }
 }

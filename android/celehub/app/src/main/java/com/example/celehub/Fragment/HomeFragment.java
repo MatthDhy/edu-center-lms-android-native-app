@@ -297,7 +297,7 @@ public class HomeFragment extends Fragment {
 
     /** Tạm thời bấm vào đâu cũng hiện Toast. Sau này thay bằng mở màn hình thật. */
     private void setupClicks(View root) {
-        bindToast(root, R.id.btnNotification, "Thông báo");
+        root.findViewById(R.id.btnNotification).setOnClickListener(v -> openChild(new NotificationFragment()));
 
         bindToast(root, R.id.tileAttendance, "Điểm danh");
         bindToast(root, R.id.tileTuition, isTeacher ? "Lương" : "Học phí");
@@ -306,7 +306,7 @@ public class HomeFragment extends Fragment {
         bindToast(root, R.id.tileSchedule, isTeacher ? "Lịch dạy" : "Lịch học");
         bindToast(root, R.id.tileDocs, "Tài liệu");
 
-        bindToast(root, R.id.tvViewAllNotifications, "Tất cả thông báo");
+        root.findViewById(R.id.tvViewAllNotifications).setOnClickListener(v-> openChild(new NotificationFragment()));
         root.findViewById(R.id.tvViewAllAssignments).setOnClickListener(v -> openAssignmentsTab());
     }
 

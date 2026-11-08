@@ -12,6 +12,7 @@ import retrofit2.http.PATCH;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 import com.example.celehub.Model.ApiResponse;
 import com.example.celehub.Model.AssignmentItem;
@@ -24,6 +25,7 @@ import com.example.celehub.Model.LoginRequest;
 import com.example.celehub.Model.ForceChangePasswordRequest;
 import com.example.celehub.Model.ChangePasswordRequest;
 import com.example.celehub.Model.MaterialItem;
+import com.example.celehub.Model.NotificationPage;
 import com.example.celehub.Model.StudentItem;
 import com.example.celehub.Model.SubmissionItem;
 import com.example.celehub.Model.SubmissionsOverview;
@@ -149,4 +151,13 @@ public interface ApiService {
     /** Giảng viên xóa tệp đề bài. */
     @DELETE("api/assignments/{id}/attachment")
     Call<ApiResponse<AssignmentItem>> removeAssignmentAttachment(@Path("id") long id);
+    /** Thông báo của tôi, mới nhất trước, phân trang (page bắt đầu từ 0). */
+    @GET("api/notifications")
+    Call<ApiResponse<NotificationPage>> getNotifications(@Query("page") int page, @Query("size") int size);
+
+    @PATCH("api/notifications/{id}/read")
+    Call<ApiResponse<Void>> markNotificationRead(@Path("id") long id);
+
+    @PATCH("api/notifications/read-all")
+    Call<ApiResponse<Map<String, Integer>>> markAllNotificationsRead();
 }
