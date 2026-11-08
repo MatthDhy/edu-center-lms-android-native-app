@@ -25,16 +25,16 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             SELECT r FROM LeaveRequest r JOIN FETCH r.student JOIN FETCH r.lesson l JOIN FETCH l.course lc JOIN FETCH lc.teacher
             LEFT JOIN FETCH r.makeupLesson m LEFT JOIN FETCH m.course mc LEFT JOIN FETCH mc.teacher """;
 
-    @Query(DETAIL + "WHERE r.student.id = :studentId ORDER BY r.createdAt DESC")
+    @Query(DETAIL + " WHERE r.student.id = :studentId ORDER BY r.createdAt DESC")
     List<LeaveRequest> findByStudentDetail(@Param("studentId") Long studentId);
 
-    @Query(DETAIL + "WHERE lc.teacher.id = :teacherId ORDER BY r.createdAt DESC")
+    @Query(DETAIL + " WHERE lc.teacher.id = :teacherId ORDER BY r.createdAt DESC")
     List<LeaveRequest> findByTeacherDetail(@Param("teacherId") Long teacherId);
 
-    @Query(DETAIL + "ORDER BY r.createdAt DESC")
+    @Query(DETAIL + " ORDER BY r.createdAt DESC")
     List<LeaveRequest> findAllDetail();
 
-    @Query(DETAIL + "WHERE r.id = :id")
+    @Query(DETAIL + " WHERE r.id = :id")
     Optional<LeaveRequest> findDetail(@Param("id") Long id);
 
     boolean existsByStudentIdAndLessonIdAndStatusIn(Long studentId, Long lessonId, Collection<LeaveStatus> statuses);
