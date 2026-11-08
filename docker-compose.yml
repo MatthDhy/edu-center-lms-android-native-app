@@ -7,6 +7,9 @@ services:
     environment:
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=70"
     ports: ["8080:8080"]
+    volumes:
+      - ./secrets/firebase-service-account.json:/app/firebase/service-account.json:ro
+
 
   web-admin:
     build: ./web-admin
@@ -14,3 +17,4 @@ services:
     restart: unless-stopped
     depends_on: [backend]
     ports: ["3000:80"]
+  

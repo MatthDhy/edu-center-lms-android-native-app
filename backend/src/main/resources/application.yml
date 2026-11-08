@@ -58,3 +58,15 @@ app:
   logging:
   level:
     org.springframework.web.cors: DEBUG
+    firebase:
+    enabled: ${FIREBASE_ENABLED:false}
+    credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
+    credentials-base64: ${FIREBASE_CREDENTIALS_BASE64:}
+  bank:
+    id: ${BANK_ID:MB}                       # mã ngân hàng theo VietQR (MB, VCB, TCB, ACB...)
+    name: ${BANK_NAME:MB Bank}
+    account-number: ${BANK_ACCOUNT_NUMBER:0901433975}
+    account-name: ${BANK_ACCOUNT_NAME:DINH VO GIA HUY}
+    webhook-secret: ${BANK_WEBHOOK_SECRET:}
+  makeup:
+    max-class-size: ${MAKEUP_MAX_CLASS_SIZE:30}
