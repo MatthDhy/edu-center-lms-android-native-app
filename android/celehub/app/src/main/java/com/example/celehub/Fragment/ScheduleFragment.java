@@ -83,8 +83,12 @@ public class ScheduleFragment extends Fragment {
         view.findViewById(R.id.btnNextWeek).setOnClickListener(v -> shiftWeek(1));
         view.findViewById(R.id.btnPickDate).setOnClickListener(v -> pickDate());
 
-        loadWeek();
         return view;
+    }
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        loadWeek();
     }
 
     @Override
