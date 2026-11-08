@@ -1,5 +1,7 @@
 package com.celehub.backend.attendance;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -29,14 +31,32 @@ public class AttendanceRecord {
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
 
+    @Column(name = "check_in_time", nullable = false)
+    private LocalDateTime checkInTime = LocalDateTime.now();
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private AttendanceStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private AttendanceMethod method = AttendanceMethod.QR;
+
     protected AttendanceRecord() {}
+
+    public AttendanceRecord(AttendanceSession session, User student, AttendanceStatus status, AttendanceMethod method) {
+        this.session = session;
+        this.student = student;
+        this.status = status;
+        this.method = method;
+    }
 
     public Long getId() { return id; }
     public AttendanceSession getSession() { return session; }
     public User getStudent() { return student; }
+    public LocalDateTime getCheckInTime() { return checkInTime; }
     public AttendanceStatus getStatus() { return status; }
+    public void setStatus(AttendanceStatus status) { this.status = status; }
+    public AttendanceMethod getMethod() { return method; }
+    public void setMethod(AttendanceMethod method) { this.method = method; }
 }
