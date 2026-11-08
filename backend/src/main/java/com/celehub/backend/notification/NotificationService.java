@@ -1,6 +1,7 @@
 package com.celehub.backend.notification;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import com.celehub.backend.course.CourseRepository;
 import com.celehub.backend.course.EnrollmentRepository;
 import com.celehub.backend.notification.dto.BroadcastRequest;
 import com.celehub.backend.notification.dto.NotificationDto;
+import com.celehub.backend.push.PushService;
 import com.celehub.backend.user.Role;
 import com.celehub.backend.user.UserRepository;
 import com.celehub.backend.user.UserStatus;
@@ -32,13 +34,16 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final PushService pushService;
 
     public NotificationService(NotificationRepository notificationRepository, UserRepository userRepository,
-                               CourseRepository courseRepository, EnrollmentRepository enrollmentRepository) {
+                               CourseRepository courseRepository, EnrollmentRepository enrollmentRepository,
+                               PushService pushService) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
+        this.pushService = pushService;
     }
 
     /** type = null: cả 2 loại. */
@@ -107,6 +112,8 @@ public class NotificationService {
     public void create(Long userId, String title, String content, Long courseId, String refType, Long refId) {
         notificationRepository.save(new Notification(userRepository.getReferenceById(userId), cut(title, 200), content,
                 NotificationType.CLASS, courseId, null, refType, refId));
+        pushService.sendToUsers(List.of(userId), cut(title, 200), content, null,
+                data(NotificationType.CLASS, courseId, refType, refId));
     }
 
     @Transactional
@@ -158,6 +165,18 @@ public class NotificationService {
                 .map(id -> new Notification(userRepository.getReferenceById(id), t, content, type,
                         courseId, imageUrl, refType, refId)).toList();
         notificationRepository.saveAll(batch);
+        pushService.sendToUsers(userIds.stream().distinct().toList(), t, content, imageUrl,
+                data(type, courseId, refType, refId));
+    }
+
+    /** Dữ liệu kèm push để app nhảy đúng màn khi người dùng bấm thông báo. */
+    private static Map<String, String> data(NotificationType type, Long courseId, String refType, Long refId) {
+        Map<String, String> m = new HashMap<>();
+        m.put("type", type.name());
+        if (courseId != null) m.put("courseId", String.valueOf(courseId));
+        if (refType != null) m.put("refType", refType);
+        if (refId != null) m.put("refId", String.valueOf(refId));
+        return m;
     }
 
     private Notification own(Long userId, Long notificationId) {

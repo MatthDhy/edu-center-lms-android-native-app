@@ -69,7 +69,7 @@ public class ReminderService {
                 FROM submissions s
                 JOIN assignments a ON a.id = s.assignment_id
                 JOIN courses c ON c.id = a.course_id
-                WHERE s.score IS NULL
+                WHERE s.score IS NULL AND a.graded = TRUE
                 GROUP BY c.teacher_id
                 """);
         for (Map<String, Object> r : rows) {
