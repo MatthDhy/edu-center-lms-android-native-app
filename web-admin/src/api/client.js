@@ -92,7 +92,7 @@ export const notificationApi = {
   /** data có thể là object (JSON) hoặc FormData (khi kèm ảnh). */
   broadcast: (data) =>
     data instanceof FormData
-      ? apiClient.post('/api/admin/notifications/broadcast', data, { headers: { 'Content-Type': 'multipart/form-data' } })
+      ? apiClient.post('/api/admin/notifications/broadcast', data, multipart)
       : apiClient.post('/api/admin/notifications/broadcast', data),
 };
 
